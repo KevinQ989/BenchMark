@@ -1,10 +1,11 @@
 import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
-
+import { Button, Platform, StyleSheet } from "react-native";
+import auth from "@react-native-firebase/auth";
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import React from "react";
 
 const HomeScreen = () => {
   return (
@@ -55,6 +56,7 @@ const HomeScreen = () => {
           <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
+        <Button title="Sign Out" onPress={() => auth().signOut()} />
       </ThemedView>
     </ParallaxScrollView>
   );

@@ -1,33 +1,58 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import React from "react";
+import { View, ActivityIndicator } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { useColorScheme } from "@/hooks/useColorScheme";
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
+const RootLayout = () => {
+  const [initialising, setInitialising] = useState(true);
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>();
+  const router = useRouter();
+  const segments = useSegments();
+  
+  const onAuthStateChanged = (user: FirebaseAuthTypes.User | null) => {
+    console.log('onAuthStateChanged', user);
+    setUser(user);
+    if (initialising) setInitialising(false); 
   }
 
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged)
+    return subscriber;
+  }, []);
+
+  useEffect(() => {
+    if (initialising) return;
+    const inAuthGroup = segments[0] === "(tabs)";
+    if (user && !inAuthGroup) {
+      router.replace("/(tabs)/home");
+    } else if (!user && inAuthGroup) {
+      router.replace("/");
+    }
+  }, [user, initialising]);
+
+  // Initialisation Loading Circle
+  if (initialising)
+    return (
+      <View
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          flex: 1
+        }}>
+          <ActivityIndicator size="large" />
+        </View>
+    )
+  
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" options={{headerShown: false}} />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
+
+export default RootLayout;
