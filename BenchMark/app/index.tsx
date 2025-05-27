@@ -42,7 +42,7 @@ const LoginScreen = () => {
 
     const SignUpView = () => {
         return (
-            <KeyboardAvoidingView behavior = "padding">
+            <KeyboardAvoidingView behavior = "padding" style={styles.contentContainer}>
                 <TextInput
                     style={styles.input}
                     value={username}
@@ -70,11 +70,11 @@ const LoginScreen = () => {
                 ) : (
                     <>
                         <TouchableOpacity style={styles.submitContainer} onPress={() => signUp(username, email, password)}>
-                            <Text style={styles.submitText}> Create Account </Text>
+                            <Text style={styles.submitText}>Create Account</Text>
                         </TouchableOpacity>
-                        <Text style={styles.changeText}> Already have an account? </Text>
+                        <Text style={styles.changeText}>Already have an account?</Text>
                         <TouchableOpacity style={styles.changeContainer} onPress={() => setSignup(false)}>
-                            <Text style={styles.changeButton}> Login </Text>
+                            <Text style={styles.changeButton}>Login</Text>
                         </TouchableOpacity>
                     </>
                 )}
@@ -84,7 +84,7 @@ const LoginScreen = () => {
 
     const SignInView = () => {
         return (
-            <KeyboardAvoidingView behavior = "padding">
+            <KeyboardAvoidingView behavior = "padding" style={styles.contentContainer}>
                 <TextInput
                     style={styles.input}
                     value={email}
@@ -105,11 +105,11 @@ const LoginScreen = () => {
                 ) : (
                     <>
                         <TouchableOpacity style={styles.submitContainer} onPress={() => signIn(email, password)}>
-                            <Text style={styles.submitText}> Login </Text>
+                            <Text style={styles.submitText}>Login</Text>
                         </TouchableOpacity>
-                        <Text style={styles.changeText}> Don't have an account? </Text>
+                        <Text style={styles.changeText}>Don't have an account?</Text>
                         <TouchableOpacity style={styles.changeContainer} onPress={() => setSignup(true)}>
-                            <Text style={styles.changeButton}> Create Account </Text>
+                            <Text style={styles.changeButton}>Create Account</Text>
                         </TouchableOpacity>
                     </>
                 )}
@@ -129,9 +129,9 @@ const LoginScreen = () => {
 
 const styles = StyleSheet.create({
     container: {
-        marginHorizontal: 20,
         flex: 1,
-        justifyContent: "center"
+        justifyContent: "center",
+        backgroundColor: "#000"
     },
 
     logoContainer: {
@@ -146,14 +146,18 @@ const styles = StyleSheet.create({
       width: 300
     },
 
+    contentContainer: {
+        marginHorizontal: 20
+    },
+
     input: {
         marginVertical: 8,
         height: 50,
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#DDDDDD",
         borderRadius: 8,
         padding: 12,
-        backgroundColor: "#fff",
+        backgroundColor: "#FFF",
         fontSize: 16
     },
 
