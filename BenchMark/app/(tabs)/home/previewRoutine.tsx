@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, View, FlatList, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView, View, FlatList, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import React from "react";
@@ -6,6 +6,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Set, Exercise, RoutineParams } from "@/components/Types";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import { FirebaseError } from "firebase/app";
 
 const PreviewRoutineScreen = () => {
     const router = useRouter();
@@ -43,8 +44,9 @@ const PreviewRoutineScreen = () => {
                 .collection("myRoutines").doc(params.id)
                 .update({exercises: updatedExercises});
             router.back();
-        } catch (e) {
-            alert(e.message);
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            alert("Save Routine Failed: " + err.message);
         }
     };
 
@@ -89,16 +91,20 @@ const PreviewRoutineScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView>
-                <ThemedText type="title">{params.routineName}</ThemedText>
+            <View style={styles.contentContainer}>
                 <FlatList
                     data={exercises}
                     renderItem={renderExercise}
+                    ListHeaderComponent={
+                        <ThemedText type="title">{params.routineName}</ThemedText>
+                    }
+                    ListFooterComponent={
+                        <TouchableOpacity style={styles.saveContainer} onPress={saveRoutine}>
+                            <Text style={styles.saveText}>Save Routine</Text>
+                        </TouchableOpacity>
+                    }
                 />
-                <TouchableOpacity style={styles.saveContainer} onPress={saveRoutine}>
-                    <Text style={styles.saveText}>Save Routine</Text>
-                </TouchableOpacity>
-        </ScrollView>
+            </View>
         </SafeAreaView>
     );
 };
@@ -108,6 +114,10 @@ const styles = StyleSheet.create({
         flex: 1,
         margin: 5,
         backgroundColor: "#FFF"
+    },
+    
+    contentContainer: {
+        paddingBottom: 50
     },
   
     exerciseContainer: {

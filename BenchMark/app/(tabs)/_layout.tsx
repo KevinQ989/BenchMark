@@ -31,8 +31,17 @@ const TabLayout = () => {
         name="home"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="exercises"
+        options={{
+          title: "Exercises",
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol size={28} name="dumbbell.fill" color={color} />
           ),
         }}
       />
@@ -40,8 +49,8 @@ const TabLayout = () => {
         name="history"
         options={{
           title: "History",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol size={28} name="clock.fill" color={color} />
           ),
         }}
       />
@@ -49,8 +58,8 @@ const TabLayout = () => {
         name="progress"
         options={{
           title: "Progress",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol size={28} name="chart.bar.fill" color={color} />
           ),
         }}
       />
@@ -58,17 +67,8 @@ const TabLayout = () => {
         name="friends"
         options={{
           title: "Friends",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="AI"
-        options={{
-          title: "AI Form",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol size={28} name="person.fill" color={color} />
           ),
         }}
       />

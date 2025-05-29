@@ -7,6 +7,7 @@ import { HelloWave } from "@/components/HelloWave";
 import { ThemedText } from "@/components/ThemedText";
 import React from "react";
 import { Exercise, Routine } from "@/components/Types";
+import { FirebaseError } from "firebase/app";
 
 const HomeScreen = () => {
   const renderExercise = ({item}: {item: Exercise}) => {
@@ -48,8 +49,9 @@ const HomeScreen = () => {
       if (userData) {
         setUsername(userData.data().username);
       }
-    } catch (e) {
-      console.log("Error receiving username: " + e.message);
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        alert("Fetch Username Failed: " + err.message);
     }
   };
 
@@ -80,8 +82,9 @@ const HomeScreen = () => {
         }
       });
       setMyRoutines(routines);
-    } catch (e) {
-      console.log("Error receiving routines: " + e.message);
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        alert("Fetch Routines Failed: " + err.message);
     }
   };
 
@@ -114,7 +117,7 @@ const HomeScreen = () => {
               data={myRoutines}
               renderItem={renderRoutine}
               horizontal={false}
-              numColumns="2"
+              numColumns={2}
               columnWrapperStyle={styles.columnWrapper}
               ListFooterComponent={() => {
                 return (
@@ -133,7 +136,7 @@ const HomeScreen = () => {
               data={sharedRoutines}
               renderItem={renderRoutine}
               horizontal={false}
-              numColumns="2"
+              numColumns={2}
               ListEmptyComponent={() => {
                 return (
                   <View style={[styles.routineCard, styles.centerContent]}>

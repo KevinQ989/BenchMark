@@ -8,6 +8,13 @@ export interface Exercise {
     sets: Set[];
 }
 
+export interface ExerciseInfo {
+    exerciseName: string;
+    target: string;
+    subTarget: string;
+    equipment: string;
+}
+
 export interface ExerciseParams {
     exerciseName: string;
     sets: string;
