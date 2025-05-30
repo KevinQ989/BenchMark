@@ -25,6 +25,40 @@ const PreviewRoutineScreen = () => {
         }));
     };
 
+    const addSet = (exerciseIndex: number) => {
+        setExercises(prev => {
+            const updated = [...prev];
+            const exercise = {...updated[exerciseIndex]};
+            const lastSet = exercise.sets[exercise.sets.length - 1];
+            const newSet = {
+                weight: lastSet?.weight || 0,
+                reps: lastSet?.reps || 0
+            }
+            exercise.sets = [...exercise.sets, newSet];
+            updated[exerciseIndex] = exercise;
+            return updated;
+        });
+    };
+
+    const removeSet = (exerciseIndex: number, setIndex: number) => {
+        setExercises(prev => {
+            const updated = [...prev];
+            const exercise = {...updated[exerciseIndex]};
+            if (exercise.sets.length > 1) {
+                exercise.sets = exercise.sets.filter((_, index) => index != setIndex);
+                updated[exerciseIndex] = exercise;
+            }
+            return updated;
+        });
+
+        const key = `${exerciseIndex}-${setIndex}`;
+        setInputs(prev => {
+            const updated = {...prev};
+            delete updated[key];
+            return updated;
+        })
+    };
+
     const saveRoutine = async () => {
         try {
             const updatedExercises = exercises.map((exercise, exerciseIndex) => ({
@@ -82,12 +116,18 @@ const PreviewRoutineScreen = () => {
                                 keyboardType="numeric"
                             />
                         </View>
+                        <TouchableOpacity style={styles.deleteButton} onPress={() => removeSet(exerciseIndex, setIndex)}>
+                            <Text style={styles.deleteText}>-</Text>
+                        </TouchableOpacity>
                     </View>
                 ))}
+                <TouchableOpacity style={styles.addButton} onPress={() => addSet(exerciseIndex)}>
+                    <Text style={styles.addText}>Add Set</Text>
+                </TouchableOpacity>
+                <View style={styles.divider} />
             </View>
         )
     };
-
 
     return (
         <SafeAreaView style={styles.container}>
@@ -145,6 +185,42 @@ const styles = StyleSheet.create({
         padding: 12,
         backgroundColor: "#FFF",
         fontSize: 16
+    },
+
+    deleteButton: {
+        width: 30,
+        height: 30,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#ff4444",
+        borderRadius: 15,
+        marginLeft: 5
+    },
+
+    deleteText: {
+        color: "#000",
+        fontSize: 20,
+        fontWeight: "bold"
+    },
+
+    addButton: {
+        backgroundColor: "#4a90e2",
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 10,
+        alignItems: "center"
+    },
+
+    addText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "bold"
+    },
+    
+    divider: {
+        height: 1,
+        backgroundColor: "#ddd",
+        marginVertical: 8
     },
 
     saveContainer: {
