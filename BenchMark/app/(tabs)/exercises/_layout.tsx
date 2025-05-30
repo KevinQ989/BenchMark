@@ -6,8 +6,18 @@ const ExercisesLayout = () => {
         <Stack>
             <Stack.Screen name="index" options={{headerShown: false}} />
             <Stack.Screen name="previewExercise" options={{
-                    headerTitle: "",
-                    headerBackTitle: "Home"
+                    presentation: "modal",
+                    headerShown: false
+                }}
+            />
+            <Stack.Screen name="addExercise" options={{
+                    presentation: "modal",
+                    title: "Add Exercise"
+                }}
+            />
+            <Stack.Screen name="filterExercise" options={{
+                    presentation: "modal",
+                    title: "Filter"
                 }}
             />
         </Stack>

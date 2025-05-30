@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import React from "react";
 import { ThemedText } from "@/components/ThemedText";
-import { Set, Exercise, RoutineParams } from "@/components/Types";
+import { Exercise, RoutineParams } from "@/components/Types";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";

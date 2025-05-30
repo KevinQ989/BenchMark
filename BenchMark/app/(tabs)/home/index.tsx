@@ -10,6 +10,10 @@ import { Exercise, Routine } from "@/components/Types";
 import { FirebaseError } from "firebase/app";
 
 const HomeScreen = () => {
+  const [username, setUsername] = useState('');
+  const [myRoutines, setMyRoutines] = useState<Routine[]>([]);
+  const [sharedRoutines, setSharedRoutines] = useState<Routine[]>([]);
+  
   const renderExercise = ({item}: {item: Exercise}) => {
     return (
         <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">{item.sets.length} x {item.exerciseName}</ThemedText>
@@ -37,10 +41,6 @@ const HomeScreen = () => {
       </TouchableOpacity>
     );
   };
-
-  const [username, setUsername] = useState('');
-  const [myRoutines, setMyRoutines] = useState<Routine[]>([]);
-  const [sharedRoutines, setSharedRoutines] = useState<Routine[]>([]);
 
   const fetchUsername = async () => {
     try {

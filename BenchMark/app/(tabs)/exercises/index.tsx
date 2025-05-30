@@ -1,11 +1,12 @@
 import { SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { FirebaseError } from "firebase/app";
+import { useRouter } from "expo-router";
 import { ExerciseInfo} from "@/components/Types";
-import { ThemedText } from "@/components/ThemedText";
 import { useEffect, useState } from "react";
 import firestore from "@react-native-firebase/firestore";
 
 const ExercisesScreen = () => {
+    const router = useRouter();
     const [allExercises, setAllExercises] = useState<ExerciseInfo[]>([]);
     const [target, setTarget] = useState<String[]>([]);
     const [equipment, setEquipment] = useState<String[]>([]);
@@ -42,9 +43,20 @@ const ExercisesScreen = () => {
 
     const renderExercise = ({item}: {item: ExerciseInfo}) => {
         return (
-            <View>
-                <Text>{item.exerciseName}</Text>
-            </View>
+            <TouchableOpacity 
+                style={styles.exerciseItem}
+                onPress={() => router.push({
+                    pathname: '/exercises/previewExercise',
+                    params: {
+                    exerciseName: item.exerciseName,
+                    target: item.target,
+                    subTarget: item.subTarget,
+                    equipment: item.equipment
+                    }
+                })}
+            >
+                <Text style={styles.exerciseName}>{item.exerciseName}</Text>
+            </TouchableOpacity>
         )
     };
 
@@ -57,32 +69,89 @@ const ExercisesScreen = () => {
     }, [target, equipment, allExercises]);
 
     return (
-        <SafeAreaView>
+        <SafeAreaView style={styles.container}>
             <View style={styles.listHeader}>
-                <TouchableOpacity style={styles.listButtons}>
-                    <ThemedText type="subtitle">Add Exercise</ThemedText>
+                <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/exercises/addExercise')}>
+                    <Text style={styles.headerButtonText}>Add Exercise</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.listButtons}>
-                    <ThemedText type="subtitle">Filter</ThemedText>
+                <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/exercises/filterExercise')}>
+                    <Text style={styles.headerButtonText}>Filter</Text>
                 </TouchableOpacity>
             </View>
             <FlatList
                 data={selected}
                 renderItem={renderExercise}
+                contentContainerStyle={styles.listContainer}
+                ItemSeparatorComponent={() => <View style={styles.seperator} />}
             />
         </SafeAreaView>
     )
 };
 
 const styles = StyleSheet.create({
-    listHeader: {
-        backgroundColor: "#808080",
-        flexDirection: "row",
-        justifyContent: "space-between"
+    container: {
+        flex: 1,
+        backgroundColor: "#f5f5f5"
     },
 
-    listButtons: {
-        padding: 10
+    listHeader: {
+        backgroundColor: "#4a90e2",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84
+    },
+
+    headerButton: {
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20
+    },
+    
+    headerButtonText: {
+        color: "#000",
+        fontSize: 16,
+        fontWeight: "600"
+    },
+
+    listContainer: {
+        paddingVertical: 8,
+        paddingBottom: 50
+    },
+
+    seperator: {
+        height: 8
+    },
+
+    exerciseItem: {
+        backgroundColor: "#fff",
+        padding: 16,
+        marginHorizontal: 16,
+        marginVertical: 4,
+        borderRadius: 8,
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 1
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.41
+    },
+
+    exerciseName: {
+        fontSize: 16,
+        fontWeight: "600",
+        marginBottom: 4
     }
 });
 
