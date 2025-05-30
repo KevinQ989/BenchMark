@@ -1,12 +1,13 @@
 import { SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { FirebaseError } from "firebase/app";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { ExerciseInfo} from "@/components/Types";
 import { useEffect, useState } from "react";
 import firestore from "@react-native-firebase/firestore";
 
 const ExercisesScreen = () => {
     const router = useRouter();
+    const filterParams = useLocalSearchParams();
     const [allExercises, setAllExercises] = useState<ExerciseInfo[]>([]);
     const [target, setTarget] = useState<String[]>([]);
     const [equipment, setEquipment] = useState<String[]>([]);
@@ -32,15 +33,6 @@ const ExercisesScreen = () => {
         }
     };
 
-    const filterExercises = () => {
-        const filtered = allExercises.filter((exercise) => 
-            (target.length === 0 || target.includes(exercise.target) || target.includes(exercise.subTarget) )&&
-            (equipment.length === 0 || equipment.includes(exercise.equipment))
-        );
-        const sorted = filtered.sort((x, y) => x.exerciseName.localeCompare(y.exerciseName))
-        setSelected(sorted)
-    };
-
     const renderExercise = ({item}: {item: ExerciseInfo}) => {
         return (
             <TouchableOpacity 
@@ -48,10 +40,10 @@ const ExercisesScreen = () => {
                 onPress={() => router.push({
                     pathname: '/exercises/previewExercise',
                     params: {
-                    exerciseName: item.exerciseName,
-                    target: item.target,
-                    subTarget: item.subTarget,
-                    equipment: item.equipment
+                        exerciseName: item.exerciseName,
+                        target: item.target,
+                        subTarget: item.subTarget,
+                        equipment: item.equipment
                     }
                 })}
             >
@@ -65,8 +57,18 @@ const ExercisesScreen = () => {
     }, []);
 
     useEffect(() => {
-        filterExercises();
-    }, [target, equipment, allExercises]);
+        setTarget(filterParams.selectedTargets ? JSON.parse(filterParams.selectedTargets) : []);
+        setEquipment(filterParams.selectedEquipment ? JSON.parse(filterParams.selectedEquipment) : []);
+    }, [filterParams.selectedTargets, filterParams.selectedEquipment]);
+
+    useEffect(() => {
+        const filtered = allExercises.filter((exercise) => 
+            (target.length === 0 || target.includes(exercise.target) || target.includes(exercise.subTarget)) &&
+            (equipment.length === 0 || equipment.includes(exercise.equipment))
+        );
+        const sorted = filtered.sort((x, y) => x.exerciseName.localeCompare(y.exerciseName));
+        setSelected(sorted);
+    }, [target, equipment, allExercises])
 
     return (
         <SafeAreaView style={styles.container}>
