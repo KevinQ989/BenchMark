@@ -10,9 +10,9 @@ const ExercisesLayout = () => {
                     headerShown: false
                 }}
             />
-            <Stack.Screen name="addExercise" options={{
+            <Stack.Screen name="newExercise" options={{
                     presentation: "modal",
-                    title: "Add Exercise"
+                    title: "New Exercise"
                 }}
             />
             <Stack.Screen name="filterExercise" options={{

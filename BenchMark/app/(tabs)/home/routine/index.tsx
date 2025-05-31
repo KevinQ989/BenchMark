@@ -60,7 +60,15 @@ const RoutineScreen = () => {
     };
 
     const addExercise = () => {
-
+        router.push({
+            pathname: "/home/routine/addExercise",
+            params: {
+                id: params.id,
+                routineName: params.routineName,
+                description: params.description,
+                exercises: JSON.stringify(exercises)
+            }
+        })
     };
 
     const removeExercise = (exericseIndex: number) => {
@@ -86,7 +94,7 @@ const RoutineScreen = () => {
             await firestore().collection("users").doc(uid)
                 .collection("myRoutines").doc(params.id)
                 .update({exercises: updatedExercises});
-            router.back();
+            router.replace('/(tabs)/home');
         } catch (e: any) {
             const err = e as FirebaseError;
             alert("Save Routine Failed: " + err.message);

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FirebaseError } from "firebase/app";
 import firestore from "@react-native-firebase/firestore";
 
-const AddExercisesScreen = () => {
+const NewExercisesScreen = () => {
     const [exerciseName, setExerciseName] = useState<string>('');
     const [target, setTarget] = useState<string>('');
     const [subTarget, setSubTarget] = useState<string>('');
@@ -141,4 +141,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default AddExercisesScreen;
+export default NewExercisesScreen;

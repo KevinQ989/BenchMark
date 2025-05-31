@@ -1,13 +1,13 @@
 import { Stack } from "expo-router";
 import React from "react";
 
-const HomeLayout = () => {
+const RoutineLayout = () => {
     return (
         <Stack>
             <Stack.Screen name="index" options={{headerShown: false}} />
-            <Stack.Screen name="routine" options={{headerShown: false}} />
+            <Stack.Screen name="addExercise" />
         </Stack>
     )
 }
 
-export default HomeLayout;
+export default RoutineLayout;

@@ -73,7 +73,7 @@ const ExercisesScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.listHeader}>
-                <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/exercises/addExercise')}>
+                <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/exercises/newExercise')}>
                     <Text style={styles.headerButtonText}>Add Exercise</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/exercises/filterExercise')}>
