@@ -20,6 +20,7 @@ export interface ExerciseParams {
     sets: string;
 }
 
+//For uploading and downloading from firestore
 export interface Routine {
     id: string;
     routineName: string;
@@ -27,9 +28,11 @@ export interface Routine {
     exercises: Exercise[];
 }
   
+//For passing routine information between screens
 export interface RoutineParams {
   id: string;
   routineName: string;
   description: string;
   exercises: string;
+  started: string;
 }

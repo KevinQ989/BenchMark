@@ -107,6 +107,35 @@ const RoutineScreen = () => {
         }
     };
 
+    const endWorkout = async () => {
+        try {
+            const updatedExercises = exercises.map((exercise, exerciseIndex) => ({
+                ...exercise,
+                sets: exercise.sets.map((set, setIndex) => {
+                    const key = `${exerciseIndex}-${setIndex}`;
+                    const inputValue = inputs[key] || {};
+                    return {
+                        weight: inputValue.weight ? Number(inputValue.weight) : set.weight,
+                        reps: inputValue.reps ? Number(inputValue.reps) : set.reps
+                    }
+                })
+            }));
+
+            const uid = auth().currentUser?.uid;
+            await firestore().collection("users").doc(uid)
+                .collection("myWorkouts").add({
+                    routineName: routineName,
+                    description: description,
+                    exercises: updatedExercises,
+                    date: new Date().toDateString()
+                });
+            router.replace('/(tabs)/home');
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            alert("End Workout Failed: " + err.message);
+        }
+    }
+
     const renderExercise = ({item, index: exerciseIndex}: {item: Exercise, index: number}) => {
         return (
             <View style={styles.exerciseContainer}>
@@ -168,9 +197,15 @@ const RoutineScreen = () => {
                     placeholder={routineName}
                     onChangeText={setRoutineName}
                 />
-                <TouchableOpacity style={styles.saveContainer} onPress={saveRoutine}>
-                    <Text style={styles.saveText}>Save Routine</Text>
-                </TouchableOpacity>
+                {params.started === "true" ? (
+                    <TouchableOpacity style={styles.headerButton} onPress={endWorkout}>
+                        <Text style={styles.headerButtonText}>End Workout</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity style={styles.headerButton} onPress={saveRoutine}>
+                        <Text style={styles.headerButtonText}>Save Routine</Text>
+                    </TouchableOpacity>
+                )}
             </View>
             <TextInput
                 style={styles.description}
@@ -221,7 +256,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between"
     },
 
-    saveContainer: {
+    headerButton: {
         backgroundColor: "#007AFF",
         borderRadius: 8,
         padding: 8,
@@ -236,7 +271,7 @@ const styles = StyleSheet.create({
         elevation: 5
     },
 
-    saveText: {
+    headerButtonText: {
         color: "#FFFFFF",
         fontSize: 16,
         fontWeight: "600"

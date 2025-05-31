@@ -70,7 +70,7 @@ const HomeScreen = () => {
   const renderRoutine = ({item}: {item: Routine}) => {
     return (
       <TouchableOpacity style={styles.routineCard} onPress={() => router.push({
-        pathname: '/home/routine',
+        pathname: '/home/routinePreview',
         params: {
           id: item.id,
           routineName: item.routineName,
@@ -103,7 +103,8 @@ const HomeScreen = () => {
           id: data.id,
           routineName: newRoutine.routineName,
           description: newRoutine.description,
-          exercises: JSON.stringify(newRoutine.exercises)
+          exercises: JSON.stringify(newRoutine.exercises),
+          started: "false"
         }
       })
     } catch (e: any) {
