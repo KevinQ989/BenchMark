@@ -36,3 +36,12 @@ export interface RoutineParams {
   exercises: string;
   started: string;
 }
+
+//For workout history
+export interface WorkoutRecord {
+    id: string;
+    routineName: string;
+    description: string;
+    exercises: Exercise[];
+    date: string;
+}
