@@ -8,7 +8,7 @@ import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
-const PreviewRoutineScreen = () => {
+const RoutineScreen = () => {
     const router = useRouter();
     const params = useLocalSearchParams<RoutineParams>();
     const [exercises, setExercises] = useState<Exercise[]>(JSON.parse(params.exercises));
@@ -59,6 +59,15 @@ const PreviewRoutineScreen = () => {
         })
     };
 
+    const addExercise = () => {
+
+    };
+
+    const removeExercise = (exericseIndex: number) => {
+        const updated = exercises.filter((_, index) => index != exericseIndex);
+        setExercises(updated);
+    };
+
     const saveRoutine = async () => {
         try {
             const updatedExercises = exercises.map((exercise, exerciseIndex) => ({
@@ -91,14 +100,19 @@ const PreviewRoutineScreen = () => {
                 
                 <View style={styles.gridRow}>
                     <ThemedText type="default" style={styles.gridColumn}>Sets</ThemedText>
-                    <ThemedText type="default" style={styles.gridColumn}>Weight (kg)</ThemedText>
-                    <ThemedText type="default" style={styles.gridColumn}>Reps</ThemedText>
+                    <ThemedText type="default" style={styles.gridColumnWide}>Weight (kg)</ThemedText>
+                    <ThemedText type="default" style={styles.gridColumnWide}>Reps</ThemedText>
+                    <View style={styles.gridColumn}>
+                        <TouchableOpacity style={styles.deleteButton} onPress={() => removeExercise(exerciseIndex)}>
+                            <Text style={styles.deleteText}>-</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 {item.sets.map((set, setIndex) => (
                     <View key={setIndex} style={styles.gridRow}>
                         <ThemedText type="default" style={styles.gridColumn}>{setIndex + 1}</ThemedText>
-                        <View style={styles.gridColumn}>
+                        <View style={styles.gridColumnWide}>
                             <TextInput
                                 style={styles.input}
                                 value={inputs.weight}
@@ -107,7 +121,7 @@ const PreviewRoutineScreen = () => {
                                 keyboardType="numeric"
                             />
                         </View>
-                        <View style={styles.gridColumn}>
+                        <View style={styles.gridColumnWide}>
                             <TextInput
                                 style={styles.input}
                                 value={inputs.reps}
@@ -116,9 +130,11 @@ const PreviewRoutineScreen = () => {
                                 keyboardType="numeric"
                             />
                         </View>
-                        <TouchableOpacity style={styles.deleteButton} onPress={() => removeSet(exerciseIndex, setIndex)}>
-                            <Text style={styles.deleteText}>-</Text>
-                        </TouchableOpacity>
+                        <View style={styles.gridColumn}>
+                            <TouchableOpacity style={styles.deleteButton} onPress={() => removeSet(exerciseIndex, setIndex)}>
+                                <Text style={styles.deleteText}>-</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 ))}
                 <TouchableOpacity style={styles.addButton} onPress={() => addSet(exerciseIndex)}>
@@ -136,11 +152,16 @@ const PreviewRoutineScreen = () => {
                     data={exercises}
                     renderItem={renderExercise}
                     ListHeaderComponent={
-                        <ThemedText type="title">{params.routineName}</ThemedText>
+                        <View style={styles.headerContainer}>
+                            <ThemedText type="title">{params.routineName}</ThemedText>
+                            <TouchableOpacity style={styles.saveContainer} onPress={saveRoutine}>
+                                <Text style={styles.saveText}>Save Routine</Text>
+                            </TouchableOpacity>
+                        </View>
                     }
                     ListFooterComponent={
-                        <TouchableOpacity style={styles.saveContainer} onPress={saveRoutine}>
-                            <Text style={styles.saveText}>Save Routine</Text>
+                        <TouchableOpacity style={styles.addButton} onPress={addExercise}>
+                            <Text style={styles.addText}>Add Exercises</Text>
                         </TouchableOpacity>
                     }
                 />
@@ -159,6 +180,34 @@ const styles = StyleSheet.create({
     contentContainer: {
         paddingBottom: 50
     },
+
+    headerContainer: {
+        padding: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between"
+    },
+
+    saveContainer: {
+        backgroundColor: "#007AFF",
+        borderRadius: 8,
+        padding: 8,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
+    },
+
+    saveText: {
+        color: "#FFFFFF",
+        fontSize: 16,
+        fontWeight: "600"
+    },
   
     exerciseContainer: {
       marginVertical: 8,
@@ -168,11 +217,18 @@ const styles = StyleSheet.create({
     gridRow: {
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 4
+        justifyContent: "space-between",
+        paddingVertical: 4,
+        gap: 8
     },
 
     gridColumn: {
         flex: 1,
+        textAlign: "center"
+    },
+
+    gridColumnWide: {
+        flex: 2,
         textAlign: "center"
     },
 
@@ -221,29 +277,7 @@ const styles = StyleSheet.create({
         height: 1,
         backgroundColor: "#ddd",
         marginVertical: 8
-    },
-
-    saveContainer: {
-        backgroundColor: "#007AFF",
-        borderRadius: 8,
-        padding: 16,
-        marginVertical: 12,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5
-    },
-
-    saveText: {
-        color: "#FFFFFF",
-        fontSize: 16,
-        fontWeight: "600"
     }
 });
 
-export default PreviewRoutineScreen;
+export default RoutineScreen;

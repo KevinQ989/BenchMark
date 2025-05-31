@@ -24,7 +24,7 @@ const HomeScreen = () => {
     const router = useRouter();
     return (
       <TouchableOpacity style={styles.routineCard} onPress={() => router.push({
-        pathname: '/home/previewRoutine',
+        pathname: '/home/routine',
         params: {
           id: item.id,
           routineName: item.routineName,

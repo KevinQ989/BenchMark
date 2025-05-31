@@ -5,7 +5,7 @@ const HomeLayout = () => {
     return (
         <Stack>
             <Stack.Screen name="index" options={{headerShown: false}} />
-            <Stack.Screen name="previewRoutine" options={{
+            <Stack.Screen name="routine" options={{
                     headerTitle: "",
                     headerBackTitle: "Home"
                 }}
