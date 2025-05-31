@@ -11,6 +11,8 @@ import { FirebaseError } from "firebase/app";
 const RoutineScreen = () => {
     const router = useRouter();
     const params = useLocalSearchParams<RoutineParams>();
+    const [routineName, setRoutineName] = useState<string>(params.routineName);
+    const [description, setDescription] = useState<string>(params.description);
     const [exercises, setExercises] = useState<Exercise[]>(JSON.parse(params.exercises));
     const [inputs, setInputs] = useState<{[key: string]: {weight: string; reps: string};}>({});
 
@@ -93,7 +95,11 @@ const RoutineScreen = () => {
             const uid = auth().currentUser?.uid;
             await firestore().collection("users").doc(uid)
                 .collection("myRoutines").doc(params.id)
-                .update({exercises: updatedExercises});
+                .update({
+                    routineName: routineName,
+                    description: description,
+                    exercises: updatedExercises
+                });
             router.replace('/(tabs)/home');
         } catch (e: any) {
             const err = e as FirebaseError;
@@ -155,25 +161,37 @@ const RoutineScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.contentContainer}>
-                <FlatList
-                    data={exercises}
-                    renderItem={renderExercise}
-                    ListHeaderComponent={
-                        <View style={styles.headerContainer}>
-                            <ThemedText type="title">{params.routineName}</ThemedText>
-                            <TouchableOpacity style={styles.saveContainer} onPress={saveRoutine}>
-                                <Text style={styles.saveText}>Save Routine</Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
-                    ListFooterComponent={
-                        <TouchableOpacity style={styles.addButton} onPress={addExercise}>
-                            <Text style={styles.addText}>Add Exercises</Text>
-                        </TouchableOpacity>
-                    }
+            <View style={styles.headerContainer}>
+                <TextInput
+                    style={styles.title}
+                    value={routineName}
+                    placeholder={routineName}
+                    onChangeText={setRoutineName}
                 />
+                <TouchableOpacity style={styles.saveContainer} onPress={saveRoutine}>
+                    <Text style={styles.saveText}>Save Routine</Text>
+                </TouchableOpacity>
             </View>
+            <TextInput
+                style={styles.description}
+                value={description}
+                placeholder={description}
+                onChangeText={setDescription}
+                multiline={true}
+            />
+            <View style={styles.divider} />
+            <FlatList
+                data={exercises}
+                renderItem={renderExercise}
+                contentContainerStyle={{
+                    paddingBottom: 50
+                }}
+                ListFooterComponent={
+                    <TouchableOpacity style={styles.addButton} onPress={addExercise}>
+                        <Text style={styles.addText}>Add Exercises</Text>
+                    </TouchableOpacity>
+                }
+            />
         </SafeAreaView>
     );
 };
@@ -185,8 +203,15 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF"
     },
     
-    contentContainer: {
-        paddingBottom: 50
+    title: {
+        fontSize: 32,
+        fontWeight: "bold",
+        flex: 1
+    },
+
+    description: {
+        fontSize: 16,
+        padding: 8
     },
 
     headerContainer: {

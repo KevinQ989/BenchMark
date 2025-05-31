@@ -10,37 +10,10 @@ import { Exercise, Routine } from "@/components/Types";
 import { FirebaseError } from "firebase/app";
 
 const HomeScreen = () => {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [myRoutines, setMyRoutines] = useState<Routine[]>([]);
   const [sharedRoutines, setSharedRoutines] = useState<Routine[]>([]);
-  
-  const renderExercise = ({item}: {item: Exercise}) => {
-    return (
-        <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">{item.sets.length} x {item.exerciseName}</ThemedText>
-    );
-  };
-
-  const renderRoutine = ({item}: {item: Routine}) => {
-    const router = useRouter();
-    return (
-      <TouchableOpacity style={styles.routineCard} onPress={() => router.push({
-        pathname: '/home/routine',
-        params: {
-          id: item.id,
-          routineName: item.routineName,
-          description: item.description,
-          exercises: JSON.stringify(item.exercises)
-        }
-      })}>
-          <ThemedText type="subtitle" numberOfLines={1} ellipsizeMode="tail">{item.routineName}</ThemedText>
-          <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">{item.description}</ThemedText>
-          <FlatList 
-            data={item.exercises}
-            renderItem={renderExercise}
-          />
-      </TouchableOpacity>
-    );
-  };
 
   const fetchUsername = async () => {
     try {
@@ -87,6 +60,57 @@ const HomeScreen = () => {
         alert("Fetch Routines Failed: " + err.message);
     }
   };
+  
+  const renderExercise = ({item}: {item: Exercise}) => {
+    return (
+        <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">{item.sets.length} x {item.exerciseName}</ThemedText>
+    );
+  };
+
+  const renderRoutine = ({item}: {item: Routine}) => {
+    return (
+      <TouchableOpacity style={styles.routineCard} onPress={() => router.push({
+        pathname: '/home/routine',
+        params: {
+          id: item.id,
+          routineName: item.routineName,
+          description: item.description,
+          exercises: JSON.stringify(item.exercises)
+        }
+      })}>
+          <ThemedText type="subtitle" numberOfLines={1} ellipsizeMode="tail">{item.routineName}</ThemedText>
+          <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">{item.description}</ThemedText>
+          <FlatList 
+            data={item.exercises}
+            renderItem={renderExercise}
+          />
+      </TouchableOpacity>
+    );
+  };
+
+  const addRoutine = async () => {
+    try {
+      const uid = auth().currentUser?.uid;
+      const newRoutine = {
+        routineName: "New Routine",
+        description: "-",
+        exercises: []
+      }
+      const data = await firestore().collection("users").doc(uid).collection("myRoutines").add(newRoutine);
+      router.push({
+        pathname: '/home/routine',
+        params: {
+          id: data.id,
+          routineName: newRoutine.routineName,
+          description: newRoutine.description,
+          exercises: JSON.stringify(newRoutine.exercises)
+        }
+      })
+    } catch (e: any) {
+      const err = e as FirebaseError;
+      alert("Add Routine Failed: " + err.message);
+    }
+  };
 
   useEffect(() => {
     fetchUsername();
@@ -121,7 +145,7 @@ const HomeScreen = () => {
               columnWrapperStyle={styles.columnWrapper}
               ListFooterComponent={() => {
                 return (
-                  <TouchableOpacity style={[styles.routineCard, styles.centerContent]}>
+                  <TouchableOpacity style={[styles.routineCard, styles.centerContent]} onPress={addRoutine}>
                     <ThemedText type="defaultSemiBold" style={styles.centerContent}>Add Routine</ThemedText>
                   </TouchableOpacity>
                 )
