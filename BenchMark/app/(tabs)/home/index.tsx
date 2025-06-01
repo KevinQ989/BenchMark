@@ -132,7 +132,7 @@ const HomeScreen = () => {
               <View style={[styles.routineCard, styles.centerContent]}>
                 <ThemedText type="defaultFaded" style={styles.centerContent}>You have not created any routines</ThemedText>
               </View>
-              <TouchableOpacity style={[styles.routineCard, styles.centerContent]}>
+              <TouchableOpacity style={[styles.routineCard, styles.centerContent]} onPress={addRoutine}>
                 <ThemedText type="defaultSemiBold" style={styles.centerContent}>Add Routine</ThemedText>
               </TouchableOpacity>
             </View>

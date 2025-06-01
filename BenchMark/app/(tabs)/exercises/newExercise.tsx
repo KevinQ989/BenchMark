@@ -2,9 +2,10 @@ import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert  } from "rea
 import { ThemedText } from "@/components/ThemedText";
 import { useState } from "react";
 import { FirebaseError } from "firebase/app";
-import firestore from "@react-native-firebase/firestore";
+import firestore, { getFirestore } from "@react-native-firebase/firestore";
 
 const NewExercisesScreen = () => {
+    const db = getFirestore();
     const [exerciseName, setExerciseName] = useState<string>('');
     const [target, setTarget] = useState<string>('');
     const [subTarget, setSubTarget] = useState<string>('');

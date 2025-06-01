@@ -3,9 +3,10 @@ import { FirebaseError } from "firebase/app";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { ExerciseInfo} from "@/components/Types";
 import { useEffect, useState } from "react";
-import firestore from "@react-native-firebase/firestore";
+import { collection, getDocs, getFirestore, query } from "@react-native-firebase/firestore";
 
 const ExercisesScreen = () => {
+    const db = getFirestore();
     const router = useRouter();
     const filterParams = useLocalSearchParams();
     const [allExercises, setAllExercises] = useState<ExerciseInfo[]>([]);
@@ -15,8 +16,9 @@ const ExercisesScreen = () => {
 
     const fetchExercises = async () => {
         try {
-            const exerciseData = await firestore().collection("exercises").get();
-            const exercises = exerciseData.docs.map(doc => {
+            const q = query(collection(db, "exercises"));
+            const querySnapshot = await getDocs(q);
+            const exercises = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
                     exerciseName: data.exerciseName,
