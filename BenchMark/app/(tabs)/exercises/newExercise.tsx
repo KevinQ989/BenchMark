@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert  } from "rea
 import { ThemedText } from "@/components/ThemedText";
 import { useState } from "react";
 import { FirebaseError } from "firebase/app";
-import firestore, { getFirestore } from "@react-native-firebase/firestore";
+import { addDoc, collection, getFirestore } from "@react-native-firebase/firestore";
 
 const NewExercisesScreen = () => {
     const db = getFirestore();
@@ -20,13 +20,13 @@ const NewExercisesScreen = () => {
             Alert.alert("Failed", "Exercise must have an equipment")
         } else {
             try {
-                const exercise = {
+                const newExercise = {
                     exerciseName: exerciseName,
                     target: target,
                     subTarget: subTarget,
                     equipment: equipment
                 }
-                await firestore().collection("exercises").add(exercise);
+                const docRef = await addDoc(collection(db, "exercises"), newExercise);
                 setExerciseName('');
                 setTarget('');
                 setSubTarget('');

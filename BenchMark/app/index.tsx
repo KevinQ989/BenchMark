@@ -3,11 +3,12 @@ import { Image } from "expo-image";
 import { KeyboardAvoidingView, StyleSheet, View, TouchableOpacity, ActivityIndicator, Text } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import auth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import { setDoc, doc, getFirestore } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import React from "react";
 
 const LoginScreen = () => {
+    const db = getFirestore();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -30,7 +31,12 @@ const LoginScreen = () => {
         setLoading(true);
         try {
             const userCredentials = await auth().createUserWithEmailAndPassword(email, password);
-            await firestore().collection("users").doc(userCredentials.user.uid).set({username: username, email: email});
+            const uid = userCredentials.user.uid;
+            const docRef = await setDoc(doc(db, "users", uid), {
+                username: username,
+                email: email
+            });
+            console.log("User Doc written with ID: " + uid);
             return userCredentials.user;
         } catch (e: any) {
             const err = e as FirebaseError;

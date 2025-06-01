@@ -16,8 +16,7 @@ const ExercisesScreen = () => {
 
     const fetchExercises = async () => {
         try {
-            const q = query(collection(db, "exercises"));
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await getDocs(query(collection(db, "exercises")));
             const exercises = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {

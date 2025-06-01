@@ -4,9 +4,10 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { ExerciseInfo, RoutineParams } from "@/components/Types";
 import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
-import firestore from "@react-native-firebase/firestore";
+import { collection, getDocs, getFirestore } from "@react-native-firebase/firestore";
 
 const AddExercisesScreen = () => {
+    const db = getFirestore();
     const router = useRouter();
     const params = useLocalSearchParams<RoutineParams>();
     const [allExercises, setAllExercises] = useState<ExerciseInfo[]>([]);
@@ -14,8 +15,8 @@ const AddExercisesScreen = () => {
 
     const fetchExercises = async () => {
         try {
-            const exerciseData = await firestore().collection("exercises").get();
-            const exercises = exerciseData.docs.map(doc => {
+            const querySnapshot = await getDocs(collection(db, "exercises"));
+            const exercises = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
                     exerciseName: data.exerciseName,

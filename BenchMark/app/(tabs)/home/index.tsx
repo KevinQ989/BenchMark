@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { ScrollView, View, FlatList, SafeAreaView, Button, StyleSheet, TouchableOpacity } from "react-native";
+import { View, FlatList, SafeAreaView, Button, StyleSheet, TouchableOpacity } from "react-native";
 import auth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import { addDoc, collection, doc, getDoc, getDocs, getFirestore, query } from "@react-native-firebase/firestore";
 import { HelloWave } from "@/components/HelloWave";
 import { ThemedText } from "@/components/ThemedText";
 import React from "react";
@@ -10,6 +10,7 @@ import { Exercise, Routine } from "@/components/Types";
 import { FirebaseError } from "firebase/app";
 
 const HomeScreen = () => {
+  const db = getFirestore();
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [myRoutines, setMyRoutines] = useState<Routine[]>([]);
@@ -18,7 +19,7 @@ const HomeScreen = () => {
   const fetchUsername = async () => {
     try {
       const uid = auth().currentUser?.uid;
-      const userData = await firestore().collection("users").doc(uid).get();
+      const userData = await getDoc(doc(db, "users", uid));
       if (userData) {
         setUsername(userData.data().username);
       }
@@ -31,10 +32,10 @@ const HomeScreen = () => {
   const fetchRoutines = async () => {
     try {
       const uid = auth().currentUser?.uid;
-      const userRoutines = await firestore().collection("users").doc(uid).collection("myRoutines").get();
-      const routines = userRoutines.docs.map(doc => {
+      const querySnapshot = await getDocs(query(collection(db, "users", uid, "myRoutines")));
+      const routines = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        const exercises = data.exercises.map((exercise: any, exerciseIndex: number) => {
+        const exercises = data.exercises.map((exercise: any) => {
           const sets = exercise.sets.map((set: any, setIndex: number) => ({
             setNum: setIndex + 1,
             weight: set.weight,
@@ -96,17 +97,17 @@ const HomeScreen = () => {
         description: "-",
         exercises: []
       }
-      const data = await firestore().collection("users").doc(uid).collection("myRoutines").add(newRoutine);
+      const docRef = await addDoc(collection(db, "users", uid, "myRoutines"), newRoutine);
       router.push({
         pathname: '/home/routine',
         params: {
-          id: data.id,
+          id: docRef.id,
           routineName: newRoutine.routineName,
           description: newRoutine.description,
           exercises: JSON.stringify(newRoutine.exercises),
           started: "false"
         }
-      })
+      });
     } catch (e: any) {
       const err = e as FirebaseError;
       alert("Add Routine Failed: " + err.message);

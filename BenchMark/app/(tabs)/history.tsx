@@ -1,81 +1,81 @@
 import { useState, useEffect } from "react";
 import { View, FlatList, SafeAreaView, Text, StyleSheet } from "react-native";
 import auth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import { collection, getDocs, getFirestore } from "@react-native-firebase/firestore";
 import React from "react";
 import { Exercise, WorkoutRecord } from "@/components/Types";
 import { FirebaseError } from "firebase/app";
 
 const HistoryScreen = () => {
-  const [history, setHistory] = useState<WorkoutRecord[]>([]);
+    const db = getFirestore();
+    const [history, setHistory] = useState<WorkoutRecord[]>([]);
 
-  const fetchHistory = async () => {
-    try {
-      const uid = auth().currentUser?.uid;
-      const userHistory = await firestore().collection("users").doc(uid)
-        .collection("myWorkouts").get();
-      const history = userHistory.docs.map(doc => {
-        const data = doc.data();
-        const exercises = data.exercises.map((exercise: any, exerciseIndex: number) => {
-          const sets = exercise.sets.map((set: any, setIndex: number) => ({
-            setNum: setIndex + 1,
-            weight: set.weight,
-            reps: set.reps,
-          }));
+    const fetchHistory = async () => {
+        try {
+        const uid = auth().currentUser?.uid;
+        const querySnapshot = await getDocs(collection(db, "users", uid, "myWorkouts"));
+        const history = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            const exercises = data.exercises.map((exercise: any, exerciseIndex: number) => {
+            const sets = exercise.sets.map((set: any, setIndex: number) => ({
+                setNum: setIndex + 1,
+                weight: set.weight,
+                reps: set.reps,
+            }));
 
-          return {
-            exerciseName: exercise.exerciseName,
-            sets: sets
-          };
+            return {
+                exerciseName: exercise.exerciseName,
+                sets: sets
+            };
+            });
+
+            return {
+            id: doc.id,
+            routineName: data.routineName,
+            description: data.description,
+            exercises: exercises,
+            date: data.date
+            }
         });
-
-        return {
-          id: doc.id,
-          routineName: data.routineName,
-          description: data.description,
-          exercises: exercises,
-          date: data.date
+        setHistory(history);
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            alert("Fetch History Failed: " + err.message);
         }
-      });
-      setHistory(history);
-    } catch (e: any) {
-        const err = e as FirebaseError;
-        alert("Fetch History Failed: " + err.message);
-    }
-  };
+    };
 
-  const renderExercise = ({item, index: exerciseIndex}: {item: Exercise, index: number}) => {
-    return (
-        <>
-            <Text style={styles.gridHeader}>{item.exerciseName}</Text>
+    const renderExercise = ({item, index: exerciseIndex}: {item: Exercise, index: number}) => {
+        return (
+            <>
+                <Text style={styles.gridHeader}>{item.exerciseName}</Text>
 
-            {item.sets.map((set, setIndex) => (
-                <View key={setIndex} style={styles.gridRow}>
-                    <Text style={styles.gridColumn}>{setIndex + 1}</Text>
-                    <Text style={styles.gridColumn}>{set.weight}kg</Text>
-                    <Text style={styles.gridColumn}>{set.reps}</Text>
+                {item.sets.map((set, setIndex) => (
+                    <View key={setIndex} style={styles.gridRow}>
+                        <Text style={styles.gridColumn}>{setIndex + 1}</Text>
+                        <Text style={styles.gridColumn}>{set.weight}kg</Text>
+                        <Text style={styles.gridColumn}>{set.reps}</Text>
+                    </View>
+                ))}
+                <View style={styles.divider} />
+            </>
+        )
+    };
+
+    const renderWorkout = ({item}: {item: WorkoutRecord}) => {
+        return (
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Text style={styles.title}>{item.routineName}</Text>
+                    <Text style={styles.subtitle}>{item.date}</Text>
+                    <Text style={styles.subtitle}>{item.description}</Text>
                 </View>
-            ))}
-            <View style={styles.divider} />
-        </>
-    )
-};
-
-  const renderWorkout = ({item}: {item: WorkoutRecord}) => {
-    return (
-        <View style={styles.card}>
-            <View style={styles.cardHeader}>
-                <Text style={styles.title}>{item.routineName}</Text>
-                <Text style={styles.subtitle}>{item.date}</Text>
-                <Text style={styles.subtitle}>{item.description}</Text>
+                <FlatList
+                    data={item.exercises}
+                    renderItem={renderExercise}
+                    style={styles.listContainer}
+                />
             </View>
-            <FlatList
-                data={item.exercises}
-                renderItem={renderExercise}
-                style={styles.listContainer}
-            />
-        </View>
-    )
+        )
   };
 
   useEffect(() => {

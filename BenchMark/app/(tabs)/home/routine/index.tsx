@@ -5,10 +5,11 @@ import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Exercise, RoutineParams } from "@/components/Types";
 import auth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import { addDoc, collection, doc, getFirestore, setDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
 const RoutineScreen = () => {
+    const db = getFirestore();
     const router = useRouter();
     const params = useLocalSearchParams<RoutineParams>();
     const [routineName, setRoutineName] = useState<string>(params.routineName);
@@ -93,13 +94,11 @@ const RoutineScreen = () => {
             }));
 
             const uid = auth().currentUser?.uid;
-            await firestore().collection("users").doc(uid)
-                .collection("myRoutines").doc(params.id)
-                .update({
-                    routineName: routineName,
-                    description: description,
-                    exercises: updatedExercises
-                });
+            const docRef = await setDoc(doc(db, "users", uid, "myRoutines", params.id), {
+                routineName: routineName,
+                description: description,
+                exercises: updatedExercises
+            })
             router.replace('/(tabs)/home');
         } catch (e: any) {
             const err = e as FirebaseError;
@@ -122,13 +121,12 @@ const RoutineScreen = () => {
             }));
 
             const uid = auth().currentUser?.uid;
-            await firestore().collection("users").doc(uid)
-                .collection("myWorkouts").add({
-                    routineName: routineName,
-                    description: description,
-                    exercises: updatedExercises,
-                    date: new Date().toDateString()
-                });
+            const docRef = await addDoc(collection(db, "users", uid, "myWorkouts"), {
+                routineName: routineName,
+                description: description,
+                exercises: updatedExercises,
+                date: new Date().toDateString()
+            })
             router.replace('/(tabs)/home');
         } catch (e: any) {
             const err = e as FirebaseError;
