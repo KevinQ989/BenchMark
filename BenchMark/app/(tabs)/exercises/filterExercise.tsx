@@ -63,8 +63,10 @@ const FilterExercisesScreen = () => {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <View style={styles.section}>
-                    <Text style={styles.sectionHeader}>Target Muscle Groups</Text>
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.title}>Target Muscle Groups</Text>
+                    </View>
                     {targets.map(target => (
                         <CheckboxItem
                             key={target}
@@ -74,8 +76,10 @@ const FilterExercisesScreen = () => {
                         />
                     ))}
                 </View>
-                <View style={styles.section}>
-                    <Text style={styles.sectionHeader}>Equipment</Text>
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.title}>Equipment</Text>
+                    </View>
                     {equipment.map(target => (
                         <CheckboxItem
                             key={target}
@@ -113,14 +117,34 @@ const styles = StyleSheet.create({
         backgroundColor: "#f5f5f5"
     },
 
-    section: {
-        marginBottom: 24
+    card: {
+        backgroundColor: "#fff",
+        borderRadius: 15,
+        marginBottom: 16,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
     },
 
-    sectionHeader: {
-        fontSize: 18,
-        fontWeight: "600",
-        marginBottom: 12
+    cardHeader: {
+        backgroundColor: "#f0f0f0",
+        padding: 16,
+        borderTopLeftRadius: 15,
+        borderTopRightRadius: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#e0e0e0"
+    },
+
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        textAlign: "center",
+        paddingBottom: 8
     },
 
     checkboxContainer: {
