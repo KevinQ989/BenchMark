@@ -16,11 +16,19 @@ As frequent gym-goers, we have tried numerous apps designed to assist with worko
 </ul>
 
 ## Testing Instructions
-Please follow the steps below to test our app on XCode's ios simulator:
-<ol>
-  <li>Download XCode from App Store</li>
-  <li>Clone the repository with `git clone https://github.com/KevinQ989/BenchMark.git`</li>
-  <li>Go to the BenchMark folder using `cd BenchMark`</li>
-  <li>Install all necessary dependencies using `npm install`</li>
-  <li>Start the app on ios simulator using `npx expo run:ios`</li>
-</ol>
+1. Clone this repository:
+   ```sh
+   git clone https://github.com/KevinQ989/BenchMark.git
+   ```
+2. Navigate to the project directory:
+   ```sh
+   cd BenchMark
+   ```
+3. Install dependencies:
+   ```sh
+   npm install
+   ```
+4. Run the application:
+   ```sh
+   npx expo run:ios
+   ```
