@@ -120,7 +120,6 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
         <View style={styles.titleContainer}>
           <ThemedText type="title">Welcome {username}</ThemedText>
           <HelloWave />
@@ -175,7 +174,6 @@ const HomeScreen = () => {
         <View style={styles.subContainer}>
           <Button title="Sign Out" onPress={() => auth().signOut()} />
         </View>
-      </ScrollView>
     </SafeAreaView>
   );
 };
