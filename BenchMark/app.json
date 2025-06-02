@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.BenchMark",
+      "buildNumber": "1",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
@@ -51,6 +52,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a7512953-f1fe-45ad-b0a7-878ab0b8144a"
+      }
     }
   }
 }
