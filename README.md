@@ -32,3 +32,9 @@ As frequent gym-goers, we have tried numerous apps designed to assist with worko
    ```sh
    npx expo run:ios
    ```
+
+Alternatively,
+1. Download the .tar file from https://drive.google.com/file/d/1aau7GckEsyxOPJF4gh1n8e6CFO9uiB61/view?usp=sharing
+2. Drag the downloaded .tar file to desktop and double-click it
+3. Open XCode's simulator
+4. Drag the BenchMark app into the simulator
