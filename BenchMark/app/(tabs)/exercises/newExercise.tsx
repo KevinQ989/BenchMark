@@ -34,7 +34,7 @@ const NewExercisesScreen = () => {
                 Alert.alert("Success", "Exercise Added Succesfully");
             } catch (e: any) {
                 const err = e as FirebaseError;
-                alert("Add Exercise Failed: " + err.message);
+                Alert.alert("Add Exercise Failed", err.message);
             }
         }
     };

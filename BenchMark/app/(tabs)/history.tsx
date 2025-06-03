@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, FlatList, SafeAreaView, Text, StyleSheet } from "react-native";
+import { Alert, View, FlatList, SafeAreaView, Text, StyleSheet } from "react-native";
 import auth from "@react-native-firebase/auth";
 import { collection, getDocs, getFirestore } from "@react-native-firebase/firestore";
 import React from "react";
@@ -41,7 +41,7 @@ const HistoryScreen = () => {
         setHistory(sortedHistory);
         } catch (e: any) {
             const err = e as FirebaseError;
-            alert("Fetch History Failed: " + err.message);
+            Alert.alert("Fetch History Failed:", err.message);
         }
     };
 

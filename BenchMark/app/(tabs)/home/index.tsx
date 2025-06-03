@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { View, FlatList, SafeAreaView, Button, StyleSheet, TouchableOpacity } from "react-native";
+import { Alert, View, FlatList, SafeAreaView, Button, StyleSheet, TouchableOpacity } from "react-native";
 import auth from "@react-native-firebase/auth";
 import { addDoc, collection, doc, getDoc, getDocs, getFirestore, query } from "@react-native-firebase/firestore";
 import { HelloWave } from "@/components/HelloWave";
@@ -25,7 +25,7 @@ const HomeScreen = () => {
       }
     } catch (e: any) {
         const err = e as FirebaseError;
-        alert("Fetch Username Failed: " + err.message);
+        Alert.alert("Fetch Username Failed", err.message);
     }
   };
 
@@ -58,7 +58,7 @@ const HomeScreen = () => {
       setMyRoutines(routines);
     } catch (e: any) {
         const err = e as FirebaseError;
-        alert("Fetch Routines Failed: " + err.message);
+        Alert.alert("Fetch Routines Failed", err.message);
     }
   };
   
@@ -110,7 +110,7 @@ const HomeScreen = () => {
       });
     } catch (e: any) {
       const err = e as FirebaseError;
-      alert("Add Routine Failed: " + err.message);
+      Alert.alert("Add Routine Failed", err.message);
     }
   };
 

@@ -1,8 +1,11 @@
-import { SafeAreaView, View, FlatList, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
+import { Alert, SafeAreaView, View, FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { RoutineParams } from "@/components/Types";
 import { Exercise } from "@/components/Types";
+import { doc, deleteDoc, getFirestore } from "@react-native-firebase/firestore";
+import auth from "@react-native-firebase/auth";
+import { FirebaseError } from "firebase/app";
 
 const RoutinePreviewScreen = () => {
     const router = useRouter();
@@ -13,6 +16,18 @@ const RoutinePreviewScreen = () => {
             <Text>{item.sets.length} x {item.exerciseName}</Text>
         );
     }
+
+    const deleteRoutine = async () => {
+        try {
+            const db = getFirestore();
+            const uid = auth().currentUser?.uid;
+            await deleteDoc(doc(db, "users", uid, "myRoutines", params.id));
+            router.back();
+        } catch (e) {
+            const err = e as FirebaseError;
+            Alert.alert("Delete Routine Failed", err.message);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -46,6 +61,9 @@ const RoutinePreviewScreen = () => {
                     }
                 })}>
                     <Text style={styles.editText}>Edit Routine</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteButton} onPress={deleteRoutine}>
+                    <Text style={styles.deleteText}>Delete Routine</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
@@ -114,6 +132,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold"
     },
+    
+    deleteButton: {
+        backgroundColor: "#4a90e2",
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 10,
+        alignItems: "center"
+    },
+
+    deleteText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "bold"
+    }
 });
 
 export default RoutinePreviewScreen;

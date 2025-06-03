@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { Alert, SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { FirebaseError } from "firebase/app";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { ExerciseInfo} from "@/components/Types";
@@ -30,7 +30,7 @@ const ExercisesScreen = () => {
             setSelected(exercises);
         } catch (e: any) {
             const err = e as FirebaseError;
-            alert("Fetch Exercises Failed: " + err.message);
+            Alert.alert("Fetch Exercises Failed", err.message);
         }
     };
 

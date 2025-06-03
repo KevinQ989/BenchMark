@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Image } from "expo-image";
-import { KeyboardAvoidingView, StyleSheet, View, TouchableOpacity, ActivityIndicator, Text } from "react-native";
+import { Alert, KeyboardAvoidingView, StyleSheet, View, TouchableOpacity, ActivityIndicator, Text } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import auth from "@react-native-firebase/auth";
 import { setDoc, doc, getFirestore } from "@react-native-firebase/firestore";
@@ -21,7 +21,7 @@ const LoginScreen = () => {
             await auth().signInWithEmailAndPassword(email, password);
         } catch (e: any) {
             const err = e as FirebaseError;
-            alert("Sign In Failed: " + err.message);
+            Alert.alert("Sign In Failed", err.message);
         } finally {
             setLoading(false);
         }
@@ -40,7 +40,7 @@ const LoginScreen = () => {
             return userCredentials.user;
         } catch (e: any) {
             const err = e as FirebaseError;
-            alert("Registration Failed: " + err.message);
+            Alert.alert("Registration Failed", err.message);
         } finally {
             setLoading(false);
         }
