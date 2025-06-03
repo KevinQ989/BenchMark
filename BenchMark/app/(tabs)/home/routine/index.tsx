@@ -69,6 +69,7 @@ const RoutineScreen = () => {
                 id: params.id,
                 routineName: params.routineName,
                 description: params.description,
+                started: params.started,
                 exercises: JSON.stringify(exercises)
             }
         })
@@ -125,7 +126,7 @@ const RoutineScreen = () => {
                 routineName: routineName,
                 description: description,
                 exercises: updatedExercises,
-                date: new Date().toDateString()
+                date: new Date()
             })
             router.replace('/(tabs)/home');
         } catch (e: any) {

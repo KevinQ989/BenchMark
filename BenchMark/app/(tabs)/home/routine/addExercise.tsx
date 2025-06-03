@@ -70,6 +70,7 @@ const AddExercisesScreen = () => {
                 id: params.id,
                 routineName: params.routineName,
                 description: params.description,
+                started: params.started,
                 exercises: JSON.stringify(updatedExercises)
             }
         })

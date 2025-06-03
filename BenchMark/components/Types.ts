@@ -43,5 +43,5 @@ export interface WorkoutRecord {
     routineName: string;
     description: string;
     exercises: Exercise[];
-    date: string;
+    date: Date;
 }

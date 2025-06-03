@@ -34,10 +34,11 @@ const HistoryScreen = () => {
             routineName: data.routineName,
             description: data.description,
             exercises: exercises,
-            date: data.date
+            date: data.date.toDate()
             }
         });
-        setHistory(history);
+        const sortedHistory = history.sort((x, y) => y.date - x.date);
+        setHistory(sortedHistory);
         } catch (e: any) {
             const err = e as FirebaseError;
             alert("Fetch History Failed: " + err.message);
@@ -66,7 +67,7 @@ const HistoryScreen = () => {
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
                     <Text style={styles.title}>{item.routineName}</Text>
-                    <Text style={styles.subtitle}>{item.date}</Text>
+                    <Text style={styles.subtitle}>{item.date.toLocaleString()}</Text>
                     <Text style={styles.subtitle}>{item.description}</Text>
                 </View>
                 <FlatList
