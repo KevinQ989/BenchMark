@@ -1,6 +1,6 @@
 import { SafeAreaView, View, FlatList, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Exercise, RoutineParams } from "@/components/Types";
@@ -16,6 +16,7 @@ const RoutineScreen = () => {
     const [description, setDescription] = useState<string>(params.description);
     const [exercises, setExercises] = useState<Exercise[]>(JSON.parse(params.exercises));
     const [inputs, setInputs] = useState<{[key: string]: {weight: string; reps: string};}>({});
+    const [timer, setTimer] = useState(0);
 
     const updateSetValue = (exerciseIndex: number, setIndex: number, field: "weight" | "reps", value: string) => {
         const key = `${exerciseIndex}-${setIndex}`;
@@ -122,11 +123,12 @@ const RoutineScreen = () => {
             }));
 
             const uid = auth().currentUser?.uid;
-            const docRef = await addDoc(collection(db, "users", uid, "myWorkouts"), {
+            await addDoc(collection(db, "users", uid, "myWorkouts"), {
                 routineName: routineName,
                 description: description,
                 exercises: updatedExercises,
-                date: new Date()
+                date: new Date(),
+                duration: timer
             })
             router.replace('/(tabs)/home');
         } catch (e: any) {
@@ -187,6 +189,13 @@ const RoutineScreen = () => {
         )
     };
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimer(prevTimer => prevTimer + 1);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.headerContainer}>
@@ -197,9 +206,12 @@ const RoutineScreen = () => {
                     onChangeText={setRoutineName}
                 />
                 {params.started === "true" ? (
-                    <TouchableOpacity style={styles.headerButton} onPress={endWorkout}>
-                        <Text style={styles.headerButtonText}>End Workout</Text>
-                    </TouchableOpacity>
+                    <View style={styles.startedHeader}>
+                        <Text style={styles.timer}>{timer}</Text>
+                        <TouchableOpacity style={styles.headerButton} onPress={endWorkout}>
+                            <Text style={styles.headerButtonText}>End Workout</Text>
+                        </TouchableOpacity>
+                    </View>
                 ) : (
                     <TouchableOpacity style={styles.headerButton} onPress={saveRoutine}>
                         <Text style={styles.headerButtonText}>Save Routine</Text>
@@ -253,6 +265,18 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between"
+    },
+
+    startedHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10
+    },
+
+    timer: {
+        fontSize: 20,
+        fontWeight: "500",
+
     },
 
     headerButton: {

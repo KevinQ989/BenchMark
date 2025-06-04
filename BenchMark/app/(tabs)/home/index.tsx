@@ -171,10 +171,6 @@ const HomeScreen = () => {
               }}
           />
         </View>
-
-        <View style={styles.subContainer}>
-          <Button title="Sign Out" onPress={() => auth().signOut()} />
-        </View>
     </SafeAreaView>
   );
 };
