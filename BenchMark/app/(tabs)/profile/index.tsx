@@ -1,19 +1,22 @@
-import { Alert, Button, FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import auth from "@react-native-firebase/auth";
 import { collection, doc, getDoc, getDocs, getFirestore } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import { useEffect, useState } from "react";
-import { HelloWave } from "@/components/HelloWave";
-import { ThemedText } from "@/components/ThemedText";
 import { Metric, WorkoutRecord } from "@/components/Types";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useRouter } from "expo-router";
 
 
 const ProfileScreen = () => {
     const db = getFirestore();
-    const [username, setUsername] = useState<String>('');
+    const router = useRouter();
+    const [username, setUsername] = useState<string>('');
     const [history, setHistory] = useState<WorkoutRecord[]>([]);
     const [metrics, setMetrics] = useState<Metric[]>([]);
     const [records, setRecords] = useState<Metric[]>([]);
+    const [photoURL, setPhotoURL] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
     
     const fetchUsername = async () => {
         try {
@@ -25,6 +28,17 @@ const ProfileScreen = () => {
             Alert.alert("Fetch Username Failed", err.message);
         }
     };
+
+    const fetchProfilePhoto = async () => {
+        try {
+            const uid = auth().currentUser?.uid;
+            const userData = await getDoc(doc(db, "users", uid));
+            setPhotoURL(userData.data().photoURL);
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            Alert.alert("Fetch Profile Photo URL Failed", err.message);
+        }
+    }
 
     const fetchHistory = async () => {
         try {
@@ -108,6 +122,7 @@ const ProfileScreen = () => {
 
     useEffect(() => {
         fetchUsername();
+        fetchProfilePhoto();
         fetchHistory();
         calculateMetrics();
         calculateRecords();
@@ -116,8 +131,18 @@ const ProfileScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.titleContainer}>
-                <ThemedText type="title">Welcome {username}</ThemedText>
-                <HelloWave />
+                {photoURL ? (
+                    <Image
+                        source={{ uri: photoURL }}
+                        style={styles.profilePhoto}
+                    />
+                ) : (
+                    <IconSymbol size={28} name="person.fill" color={"#430589"} />
+                )}
+                <Text style={styles.title}>{username}</Text>
+                <TouchableOpacity onPress={() => router.push("/(tabs)/profile/editProfile")}>
+                    <IconSymbol size={28} name="gearshape.fill" color={"#430954"} />
+                </TouchableOpacity>
             </View>
             <View style={styles.divider} />
 
@@ -153,8 +178,9 @@ const ProfileScreen = () => {
             <View style={styles.divider} />
 
             <View style={styles.subContainer}>
-                <Button title="Sign Out" onPress={() => auth().signOut()} />
+                <Text style={styles.subtitle}>Workout Dates</Text>
             </View>
+            <View style={styles.divider} />
         </SafeAreaView>
     )
 };
@@ -169,7 +195,16 @@ const styles = StyleSheet.create({
     titleContainer: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 8,
+      justifyContent: "space-between"
+    },
+
+    profilePhoto: {
+
+    },
+
+    title: {
+        fontSize: 28,
+        fontWeight: "bold"
     },
     
     subContainer: {
