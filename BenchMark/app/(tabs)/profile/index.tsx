@@ -75,7 +75,22 @@ const ProfileScreen = () => {
         }
     };
 
-    const calculateMetrics = () => {
+    const renderMetric = ({item} : {item: Metric}) => {
+        return (
+            <View style={styles.metricCard}>
+                <Text style={styles.metricInfo}>{item.value}</Text>
+                <Text style={styles.metricInfo}>{item.metric}</Text>
+            </View>
+        );
+    };
+
+    useEffect(() => {
+        fetchUsername();
+        fetchProfilePhoto();
+        fetchHistory();
+    }, []);
+
+    useEffect(() => {
         const workouts = {
             metric: "Total Workouts",
             value: history.length
@@ -89,9 +104,7 @@ const ProfileScreen = () => {
             value: totalDuration.value / workouts.value
         };
         setMetrics([workouts, totalDuration, avgDuration]);
-    };
 
-    const calculateRecords = () => {
         const bench = {
             metric: "Bench Press",
             value: 0
@@ -109,24 +122,7 @@ const ProfileScreen = () => {
             value: 0
         };
         setRecords([bench, squat, deadlift, overhead]);
-    };
-
-    const renderMetric = ({item} : {item: Metric}) => {
-        return (
-            <View style={styles.metricCard}>
-                <Text style={styles.metricInfo}>{item.value}</Text>
-                <Text style={styles.metricInfo}>{item.metric}</Text>
-            </View>
-        );
-    };
-
-    useEffect(() => {
-        fetchUsername();
-        fetchProfilePhoto();
-        fetchHistory();
-        calculateMetrics();
-        calculateRecords();
-    }, []);
+    }, [history]);
     
     return (
         <SafeAreaView style={styles.container}>
