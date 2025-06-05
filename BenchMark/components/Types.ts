@@ -44,4 +44,10 @@ export interface WorkoutRecord {
     description: string;
     exercises: Exercise[];
     date: Date;
+    duration: number;
+}
+
+export interface Metric {
+    metric: string;
+    value: number;
 }
