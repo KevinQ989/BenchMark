@@ -12,22 +12,8 @@ import { FirebaseError } from "firebase/app";
 const HomeScreen = () => {
   const db = getFirestore();
   const router = useRouter();
-  const [username, setUsername] = useState('');
   const [myRoutines, setMyRoutines] = useState<Routine[]>([]);
   const [sharedRoutines, setSharedRoutines] = useState<Routine[]>([]);
-
-  const fetchUsername = async () => {
-    try {
-      const uid = auth().currentUser?.uid;
-      const userData = await getDoc(doc(db, "users", uid));
-      if (userData) {
-        setUsername(userData.data().username);
-      }
-    } catch (e: any) {
-        const err = e as FirebaseError;
-        Alert.alert("Fetch Username Failed", err.message);
-    }
-  };
 
   const fetchRoutines = async () => {
     try {
@@ -115,17 +101,11 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    fetchUsername();
     fetchRoutines();
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-        <View style={styles.titleContainer}>
-          <ThemedText type="title">Welcome {username}</ThemedText>
-          <HelloWave />
-        </View>
-
         <View style={styles.subContainer}>
           <ThemedText type="title">My Routines</ThemedText>
           {myRoutines.length === 0 ? (

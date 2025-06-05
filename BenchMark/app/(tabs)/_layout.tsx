@@ -55,15 +55,6 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="progress"
-        options={{
-          title: "Progress",
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="chart.bar.fill" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="friends"
         options={{
           title: "Friends",
