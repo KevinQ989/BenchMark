@@ -1,8 +1,24 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { Alert, View, FlatList, SafeAreaView, Button, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Alert,
+  View,
+  FlatList,
+  SafeAreaView,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import auth from "@react-native-firebase/auth";
-import { addDoc, collection, doc, getDoc, getDocs, getFirestore, query } from "@react-native-firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  query,
+} from "@react-native-firebase/firestore";
 import { HelloWave } from "@/components/HelloWave";
 import { ThemedText } from "@/components/ThemedText";
 import React from "react";
@@ -18,8 +34,10 @@ const HomeScreen = () => {
   const fetchRoutines = async () => {
     try {
       const uid = auth().currentUser?.uid;
-      const querySnapshot = await getDocs(query(collection(db, "users", uid, "myRoutines")));
-      const routines = querySnapshot.docs.map(doc => {
+      const querySnapshot = await getDocs(
+        query(collection(db, "users", uid, "myRoutines"))
+      );
+      const routines = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         const exercises = data.exercises.map((exercise: any) => {
           const sets = exercise.sets.map((set: any, setIndex: number) => ({
@@ -30,7 +48,7 @@ const HomeScreen = () => {
 
           return {
             exerciseName: exercise.exerciseName,
-            sets: sets
+            sets: sets,
           };
         });
 
@@ -38,39 +56,47 @@ const HomeScreen = () => {
           id: doc.id,
           routineName: data.routineName,
           description: data.description,
-          exercises: exercises
-        }
+          exercises: exercises,
+        };
       });
       setMyRoutines(routines);
     } catch (e: any) {
-        const err = e as FirebaseError;
-        Alert.alert("Fetch Routines Failed", err.message);
+      const err = e as FirebaseError;
+      Alert.alert("Fetch Routines Failed", err.message);
     }
   };
-  
-  const renderExercise = ({item}: {item: Exercise}) => {
+
+  const renderExercise = ({ item }: { item: Exercise }) => {
     return (
-        <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">{item.sets.length} x {item.exerciseName}</ThemedText>
+      <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">
+        {item.sets.length} x {item.exerciseName}
+      </ThemedText>
     );
   };
 
-  const renderRoutine = ({item}: {item: Routine}) => {
+  const renderRoutine = ({ item }: { item: Routine }) => {
     return (
-      <TouchableOpacity style={styles.routineCard} onPress={() => router.push({
-        pathname: '/home/routinePreview',
-        params: {
-          id: item.id,
-          routineName: item.routineName,
-          description: item.description,
-          exercises: JSON.stringify(item.exercises)
+      <TouchableOpacity
+        style={styles.routineCard}
+        onPress={() =>
+          router.push({
+            pathname: "/home/routinePreview",
+            params: {
+              id: item.id,
+              routineName: item.routineName,
+              description: item.description,
+              exercises: JSON.stringify(item.exercises),
+            },
+          })
         }
-      })}>
-          <ThemedText type="subtitle" numberOfLines={1} ellipsizeMode="tail">{item.routineName}</ThemedText>
-          <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">{item.description}</ThemedText>
-          <FlatList 
-            data={item.exercises}
-            renderItem={renderExercise}
-          />
+      >
+        <ThemedText type="subtitle" numberOfLines={1} ellipsizeMode="tail">
+          {item.routineName}
+        </ThemedText>
+        <ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">
+          {item.description}
+        </ThemedText>
+        <FlatList data={item.exercises} renderItem={renderExercise} />
       </TouchableOpacity>
     );
   };
@@ -81,18 +107,21 @@ const HomeScreen = () => {
       const newRoutine = {
         routineName: "New Routine",
         description: "-",
-        exercises: []
-      }
-      const docRef = await addDoc(collection(db, "users", uid, "myRoutines"), newRoutine);
+        exercises: [],
+      };
+      const docRef = await addDoc(
+        collection(db, "users", uid, "myRoutines"),
+        newRoutine
+      );
       router.push({
-        pathname: '/home/routine',
+        pathname: "/home/routine",
         params: {
           id: docRef.id,
           routineName: newRoutine.routineName,
           description: newRoutine.description,
           exercises: JSON.stringify(newRoutine.exercises),
-          started: "false"
-        }
+          started: "false",
+        },
       });
     } catch (e: any) {
       const err = e as FirebaseError;
@@ -106,60 +135,77 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <View style={styles.subContainer}>
-          <ThemedText type="title">My Routines</ThemedText>
-          {myRoutines.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <View style={[styles.routineCard, styles.centerContent]}>
-                <ThemedText type="defaultFaded" style={styles.centerContent}>You have not created any routines</ThemedText>
-              </View>
-              <TouchableOpacity style={[styles.routineCard, styles.centerContent]} onPress={addRoutine}>
-                <ThemedText type="defaultSemiBold" style={styles.centerContent}>Add Routine</ThemedText>
-              </TouchableOpacity>
+      <View style={styles.subContainer}>
+        <ThemedText type="title">My Routines</ThemedText>
+        {myRoutines.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={[styles.routineCard, styles.centerContent]}>
+              <ThemedText type="defaultFaded" style={styles.centerContent}>
+                You have not created any routines
+              </ThemedText>
             </View>
-          ) : (
-            <FlatList 
-              data={myRoutines}
-              renderItem={renderRoutine}
-              horizontal={false}
-              numColumns={2}
-              columnWrapperStyle={styles.columnWrapper}
-              ListFooterComponent={() => {
-                return (
-                  <TouchableOpacity style={[styles.routineCard, styles.centerContent]} onPress={addRoutine}>
-                    <ThemedText type="defaultSemiBold" style={styles.centerContent}>Add Routine</ThemedText>
-                  </TouchableOpacity>
-                )
-              }}
-            />
-          )}
-        </View>
-
-        <View style={styles.subContainer}>
-          <ThemedText type="title">Shared Routines</ThemedText>
-          <FlatList 
-              data={sharedRoutines}
-              renderItem={renderRoutine}
-              horizontal={false}
-              numColumns={2}
-              ListEmptyComponent={() => {
-                return (
-                  <View style={[styles.routineCard, styles.centerContent]}>
-                    <ThemedText type="defaultFaded" style={styles.centerContent}>Your friends have not shared any routines</ThemedText>
-                  </View>
-                )
-              }}
+            <TouchableOpacity
+              style={[styles.routineCard, styles.centerContent]}
+              onPress={addRoutine}
+            >
+              <ThemedText type="defaultSemiBold" style={styles.centerContent}>
+                Add Routine
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={myRoutines}
+            renderItem={renderRoutine}
+            horizontal={false}
+            numColumns={2}
+            columnWrapperStyle={styles.columnWrapper}
+            ListFooterComponent={() => {
+              return (
+                <TouchableOpacity
+                  style={[styles.routineCard, styles.centerContent]}
+                  onPress={addRoutine}
+                >
+                  <ThemedText
+                    type="defaultSemiBold"
+                    style={styles.centerContent}
+                  >
+                    Add Routine
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            }}
           />
-        </View>
+        )}
+      </View>
+
+      <View style={styles.subContainer}>
+        <ThemedText type="title">Shared Routines</ThemedText>
+        <FlatList
+          data={sharedRoutines}
+          renderItem={renderRoutine}
+          horizontal={false}
+          numColumns={2}
+          ListEmptyComponent={() => {
+            return (
+              <View style={[styles.routineCard, styles.centerContent]}>
+                <ThemedText type="defaultFaded" style={styles.centerContent}>
+                  Your friends have not shared any routines
+                </ThemedText>
+              </View>
+            );
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      margin: 10,
-      backgroundColor: "#FFF"
+    flex: 1,
+    margin: 10,
+    backgroundColor: "#FFF",
   },
 
   titleContainer: {
@@ -167,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  
+
   subContainer: {
     gap: 8,
     marginBottom: 8,
@@ -176,19 +222,19 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%"
+    width: "100%",
   },
 
   centerContent: {
     justifyContent: "center",
     alignItems: "center",
-    textAlign: "center"
+    textAlign: "center",
   },
 
   columnWrapper: {
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
-  
+
   routineCard: {
     width: "48%",
     aspectRatio: 1,
@@ -196,8 +242,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 5,
     padding: 10,
-    overflow: "hidden"
-  }
+    overflow: "hidden",
+  },
 });
 
 export default HomeScreen;
