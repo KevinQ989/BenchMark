@@ -19,6 +19,7 @@ import {
   doc,
   getFirestore,
   setDoc,
+  deleteDoc,
 } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
@@ -163,6 +164,20 @@ const RoutineScreen = () => {
     }
   };
 
+  const deleteRoutine = async () => {
+    try {
+      const uid = auth().currentUser?.uid;
+      if (!uid) {
+        throw new Error("User not authenticated");
+      }
+      await deleteDoc(doc(db, "users", uid, "myRoutines", params.id));
+      router.replace("/(tabs)/home");
+    } catch (e: any) {
+      const err = e as FirebaseError;
+      alert("Delete Routine Failed: " + err.message);
+    }
+  };
+
   const renderExercise = ({
     item,
     index: exerciseIndex,
@@ -266,9 +281,20 @@ const RoutineScreen = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity style={styles.headerButton} onPress={saveRoutine}>
-            <Text style={styles.headerButtonText}>Save Routine</Text>
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={[styles.headerButton, styles.cancelButton]}
+              onPress={deleteRoutine}
+            >
+              <Text style={styles.headerButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.headerButton, styles.saveButton]}
+              onPress={saveRoutine}
+            >
+              <Text style={styles.headerButtonText}>Save</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
       <TextInput
@@ -444,6 +470,22 @@ const styles = StyleSheet.create({
   aiButton: {
     backgroundColor: "#6c5ce7",
     marginTop: 8,
+  },
+
+  headerButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  cancelButton: {
+    backgroundColor: "#ff4444",
+    minWidth: 80,
+  },
+
+  saveButton: {
+    backgroundColor: "#4CAF50",
+    minWidth: 60,
   },
 });
 

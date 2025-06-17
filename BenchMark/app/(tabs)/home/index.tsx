@@ -8,6 +8,7 @@ import {
   Button,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import auth from "@react-native-firebase/auth";
 import {
@@ -135,68 +136,72 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.subContainer}>
-        <ThemedText type="title">My Routines</ThemedText>
-        {myRoutines.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <View style={[styles.routineCard, styles.centerContent]}>
-              <ThemedText type="defaultFaded" style={styles.centerContent}>
-                You have not created any routines
-              </ThemedText>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.subContainer}>
+          <ThemedText type="title">My Routines</ThemedText>
+          {myRoutines.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <View style={[styles.routineCard, styles.centerContent]}>
+                <ThemedText type="defaultFaded" style={styles.centerContent}>
+                  You have not created any routines
+                </ThemedText>
+              </View>
+              <TouchableOpacity
+                style={[styles.routineCard, styles.centerContent]}
+                onPress={addRoutine}
+              >
+                <ThemedText type="defaultSemiBold" style={styles.centerContent}>
+                  Add Routine
+                </ThemedText>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={[styles.routineCard, styles.centerContent]}
-              onPress={addRoutine}
-            >
-              <ThemedText type="defaultSemiBold" style={styles.centerContent}>
-                Add Routine
-              </ThemedText>
-            </TouchableOpacity>
-          </View>
-        ) : (
+          ) : (
+            <FlatList
+              data={myRoutines}
+              renderItem={renderRoutine}
+              horizontal={false}
+              numColumns={2}
+              columnWrapperStyle={styles.columnWrapper}
+              scrollEnabled={false}
+              ListFooterComponent={() => {
+                return (
+                  <TouchableOpacity
+                    style={[styles.routineCard, styles.centerContent]}
+                    onPress={addRoutine}
+                  >
+                    <ThemedText
+                      type="defaultSemiBold"
+                      style={styles.centerContent}
+                    >
+                      Add Routine
+                    </ThemedText>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          )}
+        </View>
+
+        <View style={styles.subContainer}>
+          <ThemedText type="title">Shared Routines</ThemedText>
           <FlatList
-            data={myRoutines}
+            data={sharedRoutines}
             renderItem={renderRoutine}
             horizontal={false}
             numColumns={2}
-            columnWrapperStyle={styles.columnWrapper}
-            ListFooterComponent={() => {
+            scrollEnabled={false}
+            ListEmptyComponent={() => {
               return (
-                <TouchableOpacity
-                  style={[styles.routineCard, styles.centerContent]}
-                  onPress={addRoutine}
-                >
-                  <ThemedText
-                    type="defaultSemiBold"
-                    style={styles.centerContent}
-                  >
-                    Add Routine
+                <View style={[styles.routineCard, styles.centerContent]}>
+                  <ThemedText type="defaultFaded" style={styles.centerContent}>
+                    Your friends have not shared any routines
                   </ThemedText>
-                </TouchableOpacity>
+                </View>
               );
             }}
           />
-        )}
-      </View>
-
-      <View style={styles.subContainer}>
-        <ThemedText type="title">Shared Routines</ThemedText>
-        <FlatList
-          data={sharedRoutines}
-          renderItem={renderRoutine}
-          horizontal={false}
-          numColumns={2}
-          ListEmptyComponent={() => {
-            return (
-              <View style={[styles.routineCard, styles.centerContent]}>
-                <ThemedText type="defaultFaded" style={styles.centerContent}>
-                  Your friends have not shared any routines
-                </ThemedText>
-              </View>
-            );
-          }}
-        />
-      </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -204,10 +209,11 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 10,
     backgroundColor: "#FFF",
   },
-
+  scrollView: {
+    flex: 1,
+  },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -217,6 +223,7 @@ const styles = StyleSheet.create({
   subContainer: {
     gap: 8,
     marginBottom: 8,
+    padding: 16,
   },
 
   emptyContainer: {

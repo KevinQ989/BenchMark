@@ -90,7 +90,7 @@ const AIRecommendationsScreen = () => {
     setAiResponse("");
     try {
       const ai = new GoogleGenAI({
-        apiKey: "ADD_API_KEY_HERE_KEVIN",
+        apiKey: "AIzaSyDh87iUWuU0982WovL3q92Bz2k3H6-_WHw",
       });
 
       const response = await ai.models.generateContent({
@@ -137,7 +137,9 @@ const AIRecommendationsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <ThemedText type="title">AI Exercise Recommendations</ThemedText>
+        <ThemedText type="title" style={styles.title}>
+          AI Exercise Recommendations
+        </ThemedText>
         <TouchableOpacity
           style={styles.generateButton}
           onPress={getRecommendations}
@@ -205,6 +207,14 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
+    paddingHorizontal: 8,
+    paddingTop: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+    paddingHorizontal: 8,
   },
   generateButton: {
     backgroundColor: "#6c5ce7",
@@ -212,6 +222,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginTop: 16,
+    marginHorizontal: 8,
   },
   buttonText: {
     color: "#FFF",
@@ -234,6 +245,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
+    marginHorizontal: 8,
   },
   paragraph: {
     fontSize: 16,
@@ -279,7 +291,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginTop: 16,
-    marginBottom: 24,
+    marginBottom: 80,
+    marginHorizontal: 8,
   },
 });
 

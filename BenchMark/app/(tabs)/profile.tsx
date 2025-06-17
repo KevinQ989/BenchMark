@@ -7,56 +7,57 @@ import { HelloWave } from "@/components/HelloWave";
 import { ThemedText } from "@/components/ThemedText";
 
 const ProfileScreen = () => {
-    const db = getFirestore();
-    const [username, setUsername] = useState<String>('');
+  const db = getFirestore();
+  const [username, setUsername] = useState<String>("");
 
-    const fetchUsername = async () => {
-        try {
-        const uid = auth().currentUser?.uid;
-        const userData = await getDoc(doc(db, "users", uid));
-        if (userData) {
-            setUsername(userData.data().username);
-        }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch Username Failed", err.message);
-        }
-    };
+  const fetchUsername = async () => {
+    try {
+      const uid = auth().currentUser?.uid;
+      const userData = await getDoc(doc(db, "users", uid));
+      if (userData) {
+        setUsername(userData.data().username);
+      }
+    } catch (e: any) {
+      const err = e as FirebaseError;
+      Alert.alert("Fetch Username Failed", err.message);
+    }
+  };
 
-    useEffect(() => {
-        fetchUsername();
-    }, []);
-    
-    return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.titleContainer}>
-                <ThemedText type="title">Welcome {username}</ThemedText>
-                <HelloWave />
-            </View>
-            <View style={styles.subContainer}>
-                <Button title="Sign Out" onPress={() => auth().signOut()} />
-            </View>
-        </SafeAreaView>
-    )
+  useEffect(() => {
+    fetchUsername();
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.titleContainer}>
+        <ThemedText type="title">Welcome {username}</ThemedText>
+        <HelloWave />
+      </View>
+      <View style={styles.subContainer}>
+        <Button title="Sign Out" onPress={() => auth().signOut()} />
+      </View>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        margin: 10,
-        backgroundColor: "#FFF"
-    },
-  
-    titleContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-    },
-    
-    subContainer: {
-      gap: 8,
-      marginBottom: 8,
-    }
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF",
+  },
+
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 16,
+  },
+
+  subContainer: {
+    gap: 8,
+    marginBottom: 8,
+    padding: 16,
+  },
 });
 
 export default ProfileScreen;
