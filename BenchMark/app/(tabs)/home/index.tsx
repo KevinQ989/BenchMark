@@ -25,6 +25,7 @@ import { ThemedText } from "@/components/ThemedText";
 import React from "react";
 import { Exercise, Routine } from "@/components/Types";
 import { FirebaseError } from "firebase/app";
+import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = () => {
   const db = getFirestore();
@@ -35,6 +36,8 @@ const HomeScreen = () => {
   const fetchRoutines = async () => {
     try {
       const uid = auth().currentUser?.uid;
+      if (!uid) return;
+
       const querySnapshot = await getDocs(
         query(collection(db, "users", uid, "myRoutines"))
       );
@@ -66,6 +69,12 @@ const HomeScreen = () => {
       Alert.alert("Fetch Routines Failed", err.message);
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchRoutines();
+    }, [])
+  );
 
   const renderExercise = ({ item }: { item: Exercise }) => {
     return (
@@ -129,10 +138,6 @@ const HomeScreen = () => {
       Alert.alert("Add Routine Failed", err.message);
     }
   };
-
-  useEffect(() => {
-    fetchRoutines();
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
