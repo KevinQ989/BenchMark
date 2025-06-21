@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 const ProfileScreen = () => {
     const db = getFirestore();
     const router = useRouter();
+    const uid = auth().currentUser?.uid;
     const [username, setUsername] = useState<string>('');
     const [history, setHistory] = useState<WorkoutRecord[]>([]);
     const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -20,9 +21,12 @@ const ProfileScreen = () => {
     
     const fetchUsername = async () => {
         try {
-            const uid = auth().currentUser?.uid;
-            const userData = await getDoc(doc(db, "users", uid));
-            setUsername(userData.data().username);
+            if (uid) {
+                const userData = await getDoc(doc(db, "users", uid));
+                setUsername(userData.data().username);
+            } else {
+                Alert.alert("Fetch Username Failed", "No User Logged In")
+            }
         } catch (e: any) {
             const err = e as FirebaseError;
             Alert.alert("Fetch Username Failed", err.message);
@@ -31,9 +35,12 @@ const ProfileScreen = () => {
 
     const fetchProfilePhoto = async () => {
         try {
-            const uid = auth().currentUser?.uid;
-            const userData = await getDoc(doc(db, "users", uid));
-            setPhotoURL(userData.data().photoURL);
+            if (uid) {
+                const userData = await getDoc(doc(db, "users", uid));
+                setPhotoURL(userData.data().photoURL);
+            } else {
+                Alert.alert("Fetch Profile Photo URL Failed", "No User Logged In")
+            }
         } catch (e: any) {
             const err = e as FirebaseError;
             Alert.alert("Fetch Profile Photo URL Failed", err.message);
@@ -42,33 +49,36 @@ const ProfileScreen = () => {
 
     const fetchHistory = async () => {
         try {
-            const uid = auth().currentUser?.uid;
-            const querySnapshot = await getDocs(collection(db, "users", uid, "myWorkouts"));
-            const history = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                const exercises = data.exercises.map((exercise: any, exerciseIndex: number) => {
-                    const sets = exercise.sets.map((set: any, setIndex: number) => ({
-                        setNum: setIndex + 1,
-                        weight: set.weight,
-                        reps: set.reps,
-                    }));
+            if (uid) {
+                const querySnapshot = await getDocs(collection(db, "users", uid, "myWorkouts"));
+                const history = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const exercises = data.exercises.map((exercise: any, exerciseIndex: number) => {
+                        const sets = exercise.sets.map((set: any, setIndex: number) => ({
+                            setNum: setIndex + 1,
+                            weight: set.weight,
+                            reps: set.reps,
+                        }));
+
+                        return {
+                            exerciseName: exercise.exerciseName,
+                            sets: sets
+                        };
+                    });
 
                     return {
-                        exerciseName: exercise.exerciseName,
-                        sets: sets
-                    };
+                        id: doc.id,
+                        routineName: data.routineName,
+                        description: data.description,
+                        exercises: exercises,
+                        date: data.date,
+                        duration: data.duration
+                    }
                 });
-
-                return {
-                    id: doc.id,
-                    routineName: data.routineName,
-                    description: data.description,
-                    exercises: exercises,
-                    date: data.date.toDate(),
-                    duration: data.duration
-                }
-            });
-            setHistory(history);
+                setHistory(history);
+            } else {
+                Alert.alert("Fetch History Failed", "No User Logged In")
+            }
         } catch (e: any) {
             const err = e as FirebaseError;
             Alert.alert("Fetch History Failed:", err.message);
@@ -84,6 +94,14 @@ const ProfileScreen = () => {
         );
     };
 
+    const formatDuration = (n: number) => {
+        const totalSeconds = Math.floor(n);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60)
+        return `${hours}h ${minutes}m ${seconds}s`;
+    };
+
     useEffect(() => {
         fetchUsername();
         fetchProfilePhoto();
@@ -91,17 +109,18 @@ const ProfileScreen = () => {
     }, []);
 
     useEffect(() => {
+        const seconds = history.map((val) => val.duration).reduce((x, y) => x + y, 0)
         const workouts = {
             metric: "Total Workouts",
             value: history.length
         };
         const totalDuration = {
             metric: "Total Workout Duration",
-            value: history.map((val) => val.duration).reduce((x, y) => x + y, 0)
+            value: formatDuration(seconds)
         };
         const avgDuration = {
             metric: "Average Workout Duration",
-            value: totalDuration.value / workouts.value
+            value: formatDuration(seconds / workouts.value)
         };
         setMetrics([workouts, totalDuration, avgDuration]);
 
