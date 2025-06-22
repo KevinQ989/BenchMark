@@ -1,12 +1,14 @@
-import { Alert, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import auth from "@react-native-firebase/auth";
 import { collection, doc, getDoc, getDocs, getFirestore } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import { useEffect, useState } from "react";
-import { Metric, WorkoutRecord } from "@/components/Types";
+import { Metric } from "@/components/Types";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useRouter } from "expo-router";
-
+import { Calendar } from "react-native-calendars";
+import { MarkedDates } from "react-native-calendars/src/types";
+import { BarChart, barDataItem } from "react-native-gifted-charts";
 
 const ProfileScreen = () => {
     const db = getFirestore();
@@ -14,6 +16,7 @@ const ProfileScreen = () => {
     const [username, setUsername] = useState<string>('');
     const [metrics, setMetrics] = useState<Metric[]>([]);
     const [photoURL, setPhotoURL] = useState<string | null>(null);
+    const [workoutDates, setWorkoutDates] = useState<Date[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     
     const fetchUserData = async () => {
@@ -62,6 +65,59 @@ const ProfileScreen = () => {
         ])
     };
 
+    const fetchWorkoutDates = async () => {
+        try {
+            const uid = auth().currentUser?.uid;
+            if (uid) {
+                const querySnapshot = await getDocs(collection(db, "users", uid, "myWorkouts"))
+                let dates: Date[] = [];
+                querySnapshot.forEach((doc) => {
+                    const date = doc.data().date.toDate();
+                    dates.push(date);
+                });
+                setWorkoutDates(dates);
+            } else {
+                Alert.alert("Fetch Workout Dates Failed", "No User Logged In");
+            }
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            Alert.alert("Fetch Workout Dates Failed", err.message);
+        }
+    };
+
+    const toMarkedDates = (dates: Date[]) => {
+        const markedDates: MarkedDates = {};
+        dates.forEach((date: Date) => {
+            const dateString = date.toISOString().split("T")[0];
+            markedDates[dateString] = {
+                marked: true,
+                dotColor: "#4CAF50",
+                activeOpacity: 0.8
+            };
+
+        });
+        return markedDates;
+    }
+
+    const toBarData = (dates: Date[]) => {
+        const weeklyCount = new Map<string, number>();
+        dates.forEach((date: Date) => {
+            const startOfWeek = new Date(date);
+            const day = startOfWeek.getDay();
+            startOfWeek.setDate(startOfWeek.getDate() - day);
+            const key = startOfWeek.toISOString().split("T")[0];
+            weeklyCount.set(key, (weeklyCount.get(key) || 0) + 1);
+        });
+        const barData: barDataItem[] = Array.from(weeklyCount.entries())
+            .map(([key, count]) => {
+                return {
+                    value: count,
+                    label: key
+                }
+            });
+        return barData;
+    }
+
     const renderMetric = ({item} : {item: Metric}) => {
         return (
             <View style={styles.metricCard}>
@@ -81,48 +137,58 @@ const ProfileScreen = () => {
 
     useEffect(() => {
         fetchUserData();
+        fetchWorkoutDates();
     }, []);
     
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.titleContainer}>
-                {photoURL ? (
-                    <Image
-                        source={{ uri: photoURL }}
-                        style={styles.profilePhoto}
-                    />
-                ) : (
-                    <IconSymbol size={28} name="person.fill" color={"#430589"} />
-                )}
-                <Text style={styles.title}>{username}</Text>
-                <TouchableOpacity onPress={() => router.push("/(tabs)/profile/editProfile")}>
-                    <IconSymbol size={28} name="gearshape.fill" color={"#430954"} />
-                </TouchableOpacity>
-            </View>
-            <View style={styles.divider} />
-
-            <View style={styles.subContainer}>
-                <Text style={styles.subtitle}>Key Metrics</Text>
-                <FlatList
-                    data={metrics}
-                    renderItem={renderMetric}
-                    horizontal={true}
-                    ItemSeparatorComponent={() => (
-                        <View style={{ width: 10 }}/>
+            <ScrollView contentContainerStyle={{ paddingBottom: 50}}>
+                <View style={styles.titleContainer}>
+                    {photoURL ? (
+                        <Image
+                            source={{ uri: photoURL }}
+                            style={styles.profilePhoto}
+                        />
+                    ) : (
+                        <IconSymbol size={28} name="person.fill" color={"#430589"} />
                     )}
-                />
-            </View>
-            <View style={styles.divider} />
+                    <Text style={styles.title}>{username}</Text>
+                    <TouchableOpacity onPress={() => router.push("/(tabs)/profile/editProfile")}>
+                        <IconSymbol size={28} name="gearshape.fill" color={"#430954"} />
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.divider} />
 
-            <View style={styles.subContainer}>
-                <Text style={styles.subtitle}>Goal Tracking</Text>
-            </View>
-            <View style={styles.divider} />
+                <View style={styles.subContainer}>
+                    <Text style={styles.subtitle}>Key Metrics</Text>
+                    <FlatList
+                        data={metrics}
+                        renderItem={renderMetric}
+                        horizontal={true}
+                        ItemSeparatorComponent={() => (
+                            <View style={{ width: 10 }}/>
+                        )}
+                    />
+                </View>
+                <View style={styles.divider} />
 
-            <View style={styles.subContainer}>
-                <Text style={styles.subtitle}>Workout Dates</Text>
-            </View>
-            <View style={styles.divider} />
+                <View style={styles.subContainer}>
+                    <Text style={styles.subtitle}>Goal Tracking</Text>
+                </View>
+                <View style={styles.divider} />
+
+                <View style={styles.subContainer}>
+                    <Text style={styles.subtitle}>Workout Dates</Text>
+                    <Calendar
+                        style={styles.calendar}
+                        markedDates={toMarkedDates(workoutDates)}
+                    />
+                    <BarChart
+                        data={toBarData(workoutDates)}
+                    />
+                </View>
+                <View style={styles.divider} />
+            </ScrollView>
         </SafeAreaView>
     )
 };
@@ -171,6 +237,9 @@ const styles = StyleSheet.create({
     metricInfo: {
         fontSize: 16,
         fontWeight: "500"
+    },
+
+    calendar: {
     },
 
     divider: {
