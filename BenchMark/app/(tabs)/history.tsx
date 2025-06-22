@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   Text,
   StyleSheet,
+  RefreshControl,
 } from "react-native";
 import auth from "@react-native-firebase/auth";
 import {
@@ -16,14 +17,21 @@ import {
 import React from "react";
 import { Exercise, WorkoutRecord } from "@/components/Types";
 import { FirebaseError } from "firebase/app";
+import { useFocusEffect } from "@react-navigation/native";
 
 const HistoryScreen = () => {
   const db = getFirestore();
   const [history, setHistory] = useState<WorkoutRecord[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchHistory = async () => {
     try {
       const uid = auth().currentUser?.uid;
+      if (!uid) {
+        Alert.alert("Error", "User not authenticated");
+        return;
+      }
+
       const querySnapshot = await getDocs(
         collection(db, "users", uid, "myWorkouts")
       );
@@ -58,6 +66,12 @@ const HistoryScreen = () => {
       const err = e as FirebaseError;
       Alert.alert("Fetch History Failed:", err.message);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchHistory();
+    setRefreshing(false);
   };
 
   const renderExercise = ({
@@ -100,15 +114,20 @@ const HistoryScreen = () => {
     );
   };
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchHistory();
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         data={history}
         renderItem={renderWorkout}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>

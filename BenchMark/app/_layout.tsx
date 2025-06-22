@@ -10,15 +10,15 @@ const RootLayout = () => {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>();
   const router = useRouter();
   const segments = useSegments();
-  
+
   const onAuthStateChanged = (user: FirebaseAuthTypes.User | null) => {
-    console.log('onAuthStateChanged', user);
+    console.log("onAuthStateChanged", user);
     setUser(user);
-    if (initialising) setInitialising(false); 
-  }
+    if (initialising) setInitialising(false);
+  };
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged)
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
   }, []);
 
@@ -39,20 +39,21 @@ const RootLayout = () => {
         style={{
           alignItems: "center",
           justifyContent: "center",
-          flex: 1
-        }}>
-          <ActivityIndicator size="large" />
-        </View>
-    )
-  
+          flex: 1,
+        }}
+      >
+        <ActivityIndicator size="large" />
+      </View>
+    );
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack>
-        <Stack.Screen name="index" options={{headerShown: false}} />
-        <Stack.Screen name="(tabs)" options={{headerShown: false}} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </GestureHandlerRootView>
   );
-}
+};
 
 export default RootLayout;
