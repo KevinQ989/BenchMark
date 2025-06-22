@@ -11,78 +11,55 @@ import { useRouter } from "expo-router";
 const ProfileScreen = () => {
     const db = getFirestore();
     const router = useRouter();
-    const uid = auth().currentUser?.uid;
     const [username, setUsername] = useState<string>('');
-    const [history, setHistory] = useState<WorkoutRecord[]>([]);
     const [metrics, setMetrics] = useState<Metric[]>([]);
-    const [records, setRecords] = useState<Metric[]>([]);
     const [photoURL, setPhotoURL] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     
-    const fetchUsername = async () => {
+    const fetchUserData = async () => {
         try {
+            const uid = auth().currentUser?.uid;
             if (uid) {
-                const userData = await getDoc(doc(db, "users", uid));
-                setUsername(userData.data().username);
+                const docSnap = await getDoc(doc(db, "users", uid));
+                const data = docSnap.data();
+                if (data) {
+                    setUsername(data.username);
+                    setPhotoURL(data.photoURL);
+                    fetchMetrics(data.metrics);
+                }
             } else {
-                Alert.alert("Fetch Username Failed", "No User Logged In")
+                Alert.alert("Fetch User Data Failed", "No User Logged In");
             }
         } catch (e: any) {
             const err = e as FirebaseError;
-            Alert.alert("Fetch Username Failed", err.message);
+            Alert.alert("Fetch User Data Failed", err.message);
         }
     };
 
-    const fetchProfilePhoto = async () => {
-        try {
-            if (uid) {
-                const userData = await getDoc(doc(db, "users", uid));
-                setPhotoURL(userData.data().photoURL);
-            } else {
-                Alert.alert("Fetch Profile Photo URL Failed", "No User Logged In")
-            }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch Profile Photo URL Failed", err.message);
+    const fetchMetrics = (map: { [key: string]: number } | undefined) => {
+        let workouts;
+        let duration;
+        if (map) {
+            workouts = map.workouts ?? 0;
+            duration = map.duration ?? 0;
+        } else {
+            workouts = 0;
+            duration = 0;
         }
-    }
-
-    const fetchHistory = async () => {
-        try {
-            if (uid) {
-                const querySnapshot = await getDocs(collection(db, "users", uid, "myWorkouts"));
-                const history = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    const exercises = data.exercises.map((exercise: any, exerciseIndex: number) => {
-                        const sets = exercise.sets.map((set: any, setIndex: number) => ({
-                            setNum: setIndex + 1,
-                            weight: set.weight,
-                            reps: set.reps,
-                        }));
-
-                        return {
-                            exerciseName: exercise.exerciseName,
-                            sets: sets
-                        };
-                    });
-
-                    return {
-                        id: doc.id,
-                        routineName: data.routineName,
-                        description: data.description,
-                        exercises: exercises,
-                        date: data.date,
-                        duration: data.duration
-                    }
-                });
-                setHistory(history);
-            } else {
-                Alert.alert("Fetch History Failed", "No User Logged In")
+        setMetrics([
+            {
+                metric: "Total Workouts",
+                value: workouts.toLocaleString()
+            },
+            {
+                metric: "Total Workout Duration",
+                value: formatDuration(duration)
+            },
+            {
+                metric: "Average Workout Duration",
+                value: formatDuration(duration / workouts)
             }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch History Failed:", err.message);
-        }
+        ])
     };
 
     const renderMetric = ({item} : {item: Metric}) => {
@@ -103,45 +80,8 @@ const ProfileScreen = () => {
     };
 
     useEffect(() => {
-        fetchUsername();
-        fetchProfilePhoto();
-        fetchHistory();
+        fetchUserData();
     }, []);
-
-    useEffect(() => {
-        const seconds = history.map((val) => val.duration).reduce((x, y) => x + y, 0)
-        const workouts = {
-            metric: "Total Workouts",
-            value: history.length
-        };
-        const totalDuration = {
-            metric: "Total Workout Duration",
-            value: formatDuration(seconds)
-        };
-        const avgDuration = {
-            metric: "Average Workout Duration",
-            value: formatDuration(seconds / workouts.value)
-        };
-        setMetrics([workouts, totalDuration, avgDuration]);
-
-        const bench = {
-            metric: "Bench Press",
-            value: 0
-        };
-        const squat = {
-            metric: "Squat",
-            value: 0
-        };
-        const deadlift = {
-            metric: "Deadlift",
-            value: 0
-        };
-        const overhead = {
-            metric: "Overhead Press",
-            value: 0
-        };
-        setRecords([bench, squat, deadlift, overhead]);
-    }, [history]);
     
     return (
         <SafeAreaView style={styles.container}>
@@ -165,19 +105,6 @@ const ProfileScreen = () => {
                 <Text style={styles.subtitle}>Key Metrics</Text>
                 <FlatList
                     data={metrics}
-                    renderItem={renderMetric}
-                    horizontal={true}
-                    ItemSeparatorComponent={() => (
-                        <View style={{ width: 10 }}/>
-                    )}
-                />
-            </View>
-            <View style={styles.divider} />
-
-            <View style={styles.subContainer}>
-                <Text style={styles.subtitle}>Personal Records</Text>
-                <FlatList
-                    data={records}
                     renderItem={renderMetric}
                     horizontal={true}
                     ItemSeparatorComponent={() => (

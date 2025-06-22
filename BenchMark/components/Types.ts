@@ -49,5 +49,5 @@ export interface WorkoutRecord {
 
 export interface Metric {
     metric: string;
-    value: number;
+    value: string;
 }

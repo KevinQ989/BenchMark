@@ -1,11 +1,11 @@
-import { SafeAreaView, View, FlatList, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView, View, FlatList, StyleSheet, TextInput, Text, TouchableOpacity, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Exercise, RoutineParams } from "@/components/Types";
 import auth from "@react-native-firebase/auth";
-import { addDoc, collection, doc, getFirestore, setDoc } from "@react-native-firebase/firestore";
+import { addDoc, collection, doc, getDoc, getFirestore, setDoc, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
 const RoutineScreen = () => {
@@ -130,10 +130,32 @@ const RoutineScreen = () => {
                 date: new Date(),
                 duration: timer
             })
+            updateMetrics();
             router.replace('/(tabs)/home');
         } catch (e: any) {
             const err = e as FirebaseError;
             alert("End Workout Failed: " + err.message);
+        }
+    }
+
+    const updateMetrics = async () => {
+        try {
+            const uid = auth().currentUser?.uid;
+            const docRef = doc(db, "users", uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const oldMetrics = docSnap.data().metrics;
+                const newMetrics = {
+                    workouts: oldMetrics.workouts + 1,
+                    duration: oldMetrics.duration + timer
+                }
+                await updateDoc(docRef, {
+                    metrics: newMetrics
+                })
+            }
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            Alert.alert("Update Metrics Failed", err.message);
         }
     }
 
