@@ -47,7 +47,19 @@ export interface WorkoutRecord {
     duration: number;
 }
 
+// For general statistics tracking
 export interface Metric {
     metric: string;
     value: string;
+}
+
+interface Record {
+    date: Date;
+    weight: number;
+}
+
+// For 1RM tracking
+export interface RepMax {
+    exercise: string;
+    history: Record[];
 }

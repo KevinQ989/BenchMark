@@ -3,7 +3,7 @@ import auth from "@react-native-firebase/auth";
 import { collection, doc, getDoc, getDocs, getFirestore } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import { useEffect, useState } from "react";
-import { Metric } from "@/components/Types";
+import { Metric, RepMax } from "@/components/Types";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useRouter } from "expo-router";
 import { Calendar } from "react-native-calendars";
@@ -15,6 +15,7 @@ const ProfileScreen = () => {
     const router = useRouter();
     const [username, setUsername] = useState<string>('');
     const [metrics, setMetrics] = useState<Metric[]>([]);
+    const [records, setRecords] = useState<RepMax[]>([]);
     const [photoURL, setPhotoURL] = useState<string | null>(null);
     const [workoutDates, setWorkoutDates] = useState<Date[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -85,6 +86,31 @@ const ProfileScreen = () => {
         }
     };
 
+    const fetchRecords = async () => {
+        try {
+            const uid = auth().currentUser?.uid;
+            if (uid) {
+                const querySnapshot = await getDocs(collection(db, "users", uid, "repmax"))
+                const repmaxs: RepMax[] = querySnapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    return {
+                        exercise: data.exercise,
+                        history: data.history.map((record: any) => ({
+                            date: record.date.toDate(),
+                            weight: record.weight
+                        }))
+                    };
+                });
+                setRecords(repmaxs);
+            } else {
+                Alert.alert("Fetch Records Failed", "No User Logged In");
+            }
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            Alert.alert("Fetch Records Failed", err.message);
+        }
+    };
+
     const toMarkedDates = (dates: Date[]) => {
         const markedDates: MarkedDates = {};
         dates.forEach((date: Date) => {
@@ -97,7 +123,7 @@ const ProfileScreen = () => {
 
         });
         return markedDates;
-    }
+    };
 
     const toBarData = (dates: Date[]) => {
         const weeklyCount = new Map<string, { count: number, date: Date }>();
@@ -147,12 +173,25 @@ const ProfileScreen = () => {
 
     const renderMetric = ({item} : {item: Metric}) => {
         return (
-            <View style={styles.metricCard}>
-                <Text style={styles.metricValue}>{item.value}</Text>
-                <Text style={styles.metricInfo}>{item.metric}</Text>
+            <View style={styles.card}>
+                <Text style={styles.cardValue}>{item.value}</Text>
+                <Text style={styles.cardName}>{item.metric}</Text>
             </View>
         );
     };
+
+    const renderRepMax = ({item} : {item: RepMax}) => {
+        const last = item.history
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+        const date = last.date.toLocaleDateString();
+        return (
+            <View style={styles.card}>
+                <Text style={styles.cardValue}>{last.weight}kg</Text>
+                <Text style={styles.cardDate}>{date}</Text>
+                <Text style={styles.cardName}>{item.exercise}</Text>
+            </View>
+        );
+    }
 
     const formatDuration = (n: number) => {
         const totalSeconds = Math.floor(n);
@@ -165,6 +204,7 @@ const ProfileScreen = () => {
     useEffect(() => {
         fetchUserData();
         fetchWorkoutDates();
+        fetchRecords();
     }, []);
     
     return (
@@ -180,7 +220,13 @@ const ProfileScreen = () => {
                         <IconSymbol size={28} name="person.fill" color={"#430589"} />
                     )}
                     <Text style={styles.title}>{username}</Text>
-                    <TouchableOpacity onPress={() => router.push("/(tabs)/profile/editProfile")}>
+                    <TouchableOpacity onPress={() => router.push({
+                        pathname: "/(tabs)/profile/editProfile",
+                        params: {
+                            username: username,
+                            photoURL: photoURL
+                        }
+                    })}>
                         <IconSymbol size={28} name="gearshape.fill" color={"#430954"} />
                     </TouchableOpacity>
                 </View>
@@ -200,7 +246,18 @@ const ProfileScreen = () => {
                 <View style={styles.divider} />
 
                 <View style={styles.subContainer}>
-                    <Text style={styles.subtitle}>Goal Tracking</Text>
+                    <Text style={styles.subtitle}>Personal Records</Text>
+                    <FlatList
+                        data={records}
+                        renderItem={renderRepMax}
+                        horizontal={true}
+                        ItemSeparatorComponent={() => (
+                            <View style={{ width: 10 }}/>
+                        )}
+                    />
+                    <TouchableOpacity style={styles.buttonContainer} onPress={() => router.push("/(tabs)/profile/addRecord")}>
+                        <Text style={styles.buttonText}>Add Record</Text>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.divider} />
 
@@ -236,7 +293,6 @@ const ProfileScreen = () => {
                 <View style={styles.subContainer}>
                     <Text style={styles.subtitle}>Workout Dates</Text>
                     <Calendar
-                        style={styles.calendar}
                         markedDates={toMarkedDates(workoutDates)}
                     />
                 </View>
@@ -285,7 +341,7 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
 
-    metricCard: {
+    card: {
         borderRadius: 15,
         backgroundColor: "#4a9e02",
         alignItems: "center",
@@ -296,7 +352,7 @@ const styles = StyleSheet.create({
         minHeight: 100
     },
 
-    metricInfo: {
+    cardName: {
         fontSize: 14,
         fontWeight: "600",
         textAlign: "center",
@@ -304,14 +360,36 @@ const styles = StyleSheet.create({
         lineHeight: 18
     },
 
-    metricValue: {
+    cardValue: {
         fontSize: 20,
         fontWeight: "bold",
         color: "#000",
         textAlign: "center"
     },
 
-    calendar: {
+    cardDate: {
+        fontSize: 11,
+        fontWeight: "400",
+        textAlign: "center",
+        color: "#333",
+        lineHeight: 14,
+        marginTop: 2
+    },
+    
+    buttonContainer: {
+        backgroundColor: "#cccccc",
+        borderRadius: 20,
+        paddingVertical: 14,
+        paddingHorizontal: 40,
+        marginTop: 16
+    },
+
+    buttonText: {
+        color: "#000",
+        fontSize: 16,
+        fontWeight: "600",
+        textAlign: "center",
+        letterSpacing: 0.5
     },
 
     divider: {
