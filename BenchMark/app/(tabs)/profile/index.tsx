@@ -55,11 +55,11 @@ const ProfileScreen = () => {
                 value: workouts.toLocaleString()
             },
             {
-                metric: "Total Workout Duration",
+                metric: "Total Workout\nDuration",
                 value: formatDuration(duration)
             },
             {
-                metric: "Average Workout Duration",
+                metric: "Average Workout\nDuration",
                 value: formatDuration(duration / workouts)
             }
         ])
@@ -100,28 +100,55 @@ const ProfileScreen = () => {
     }
 
     const toBarData = (dates: Date[]) => {
-        const weeklyCount = new Map<string, number>();
+        const weeklyCount = new Map<string, { count: number, date: Date }>();
+
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+            const dateKey = new Date(today);
+            dateKey.setDate(today.getDate() - today.getDay() - (7 * i));
+            const stringKey = dateKey.toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "short"
+            });
+            weeklyCount.set(stringKey, { count: 0, date: dateKey });
+        };
+
         dates.forEach((date: Date) => {
-            const startOfWeek = new Date(date);
-            const day = startOfWeek.getDay();
-            startOfWeek.setDate(startOfWeek.getDate() - day);
-            const key = startOfWeek.toISOString().split("T")[0];
-            weeklyCount.set(key, (weeklyCount.get(key) || 0) + 1);
+            const dateKey = new Date(date);
+            dateKey.setDate(dateKey.getDate() - dateKey.getDay());
+            const stringKey = dateKey.toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "short"
+            });
+            if (weeklyCount.has(stringKey)) {
+                const current = weeklyCount.get(stringKey) || { count: 0, date: dateKey };
+                weeklyCount.set(stringKey, { count: current.count + 1, date: dateKey });
+            }
         });
+
         const barData: barDataItem[] = Array.from(weeklyCount.entries())
-            .map(([key, count]) => {
+            .sort(([, a], [, b]) => a.date.getTime() - b.date.getTime())
+            .map(([key, data]) => {
                 return {
-                    value: count,
+                    value: data.count,
                     label: key
                 }
             });
         return barData;
-    }
+    };
+
+    const getMax = (barDataItems: barDataItem[]) => {
+        let count: number[] = [];
+        barDataItems.forEach((item: barDataItem) => {
+            count.push(item.value || 0)
+        });
+        return Math.max(...count);
+    };
 
     const renderMetric = ({item} : {item: Metric}) => {
         return (
             <View style={styles.metricCard}>
-                <Text style={styles.metricInfo}>{item.value}</Text>
+                <Text style={styles.metricValue}>{item.value}</Text>
                 <Text style={styles.metricInfo}>{item.metric}</Text>
             </View>
         );
@@ -178,13 +205,39 @@ const ProfileScreen = () => {
                 <View style={styles.divider} />
 
                 <View style={styles.subContainer}>
+                    <Text style={styles.subtitle}>Weekly Workout Goal</Text>
+                    <View style={styles.subContainer}>
+                        <BarChart
+                            data={toBarData(workoutDates)}
+                            barWidth={22}
+                            barBorderRadius={4}
+                            frontColor="#177AD5"
+                            stepValue={1}
+                            maxValue={getMax(toBarData(workoutDates)) + 1}
+                            yAxisThickness={0}
+                            xAxisThickness={0}
+                            rotateLabel
+                            xAxisLabelTextStyle={{
+                                color: '#666',
+                                fontSize: 10,
+                                fontWeight: '400',
+                            }}
+                            yAxisTextStyle={{
+                                color: '#666',
+                                fontSize: 12,
+                            }}
+                            disablePress
+                            disableScroll
+                        />
+                    </View>
+                </View>
+                <View style={styles.divider} />
+
+                <View style={styles.subContainer}>
                     <Text style={styles.subtitle}>Workout Dates</Text>
                     <Calendar
                         style={styles.calendar}
                         markedDates={toMarkedDates(workoutDates)}
-                    />
-                    <BarChart
-                        data={toBarData(workoutDates)}
                     />
                 </View>
                 <View style={styles.divider} />
@@ -207,7 +260,10 @@ const styles = StyleSheet.create({
     },
 
     profilePhoto: {
-
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: "#f0f0f0"
     },
 
     title: {
@@ -219,24 +275,40 @@ const styles = StyleSheet.create({
       gap: 8,
       marginBottom: 8,
       alignItems: "center",
-      paddingVertical: 20
+      paddingVertical: 20,
+      paddingHorizontal: 10
     },
 
     subtitle: {
         fontSize: 24,
-        fontWeight: "bold"
+        fontWeight: "bold",
+        marginBottom: 10
     },
 
     metricCard: {
         borderRadius: 15,
         backgroundColor: "#4a9e02",
         alignItems: "center",
-        padding: 10
+        justifyContent: "center",
+        padding: 15,
+        gap: 8,
+        minWidth: 120,
+        minHeight: 100
     },
 
     metricInfo: {
-        fontSize: 16,
-        fontWeight: "500"
+        fontSize: 14,
+        fontWeight: "600",
+        textAlign: "center",
+        color: "#000",
+        lineHeight: 18
+    },
+
+    metricValue: {
+        fontSize: 20,
+        fontWeight: "bold",
+        color: "#000",
+        textAlign: "center"
     },
 
     calendar: {
@@ -244,8 +316,8 @@ const styles = StyleSheet.create({
 
     divider: {
         height: 1,
-        borderWidth: 1,
-        borderColor: "#ddd"
+        backgroundColor: "#e0e0e0",
+        marginVertical: 10
     }
 });
 
