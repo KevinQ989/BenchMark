@@ -23,7 +23,7 @@ As frequent gym-goers, we have tried numerous apps designed to assist with worko
    ```sh
    git clone https://github.com/KevinQ989/BenchMark.git
    ```
-2. Navigate to the project directory:
+2. Navigate to the project root directory:
    ```sh
    cd BenchMark
    ```
