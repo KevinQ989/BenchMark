@@ -34,37 +34,41 @@ const AddRecordScreen = () => {
     };
 
     const saveRecord = async () => {
-        try {
-            const uid = auth().currentUser?.uid;
-            if (uid) {
-                const db = getFirestore();
-                const docRef = doc(db, "users", uid, "repmax", exercise);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    await updateDoc(docRef, {
-                        history: arrayUnion({
-                            date: date,
-                            weight: weight
-                        })
-                    });
+        if (!exercise) {
+            Alert.alert("Add 1RM Failed", "No Exercise Selected")
+        } else {
+            try {
+                const uid = auth().currentUser?.uid;
+                if (uid) {
+                    const db = getFirestore();
+                    const docRef = doc(db, "users", uid, "repmax", exercise);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        await updateDoc(docRef, {
+                            history: arrayUnion({
+                                date: date,
+                                weight: weight
+                            })
+                        });
+                    } else {
+                        await setDoc(docRef, {
+                            exercise: exercise,
+                            history: [{
+                                date: date,
+                                weight: weight
+                            }]
+                        });
+                    }
+                    setExercise('');
+                    setWeight(0);
+                    setDate(new Date());
                 } else {
-                    await setDoc(docRef, {
-                        exercise: exercise,
-                        history: [{
-                            date: date,
-                            weight: weight
-                        }]
-                    });
+                    Alert.alert("Add 1RM Failed", "No User Logged In");
                 }
-                setExercise('');
-                setWeight(0);
-                setDate(new Date());
-            } else {
-                Alert.alert("Add 1RM Failed", "No User Logged In");
+            } catch (e: any) {
+                const err = e as FirebaseError;
+                Alert.alert("Add 1RM Failed", err.message);
             }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Add 1RM Failed", err.message);
         }
     };
 
@@ -83,6 +87,7 @@ const AddRecordScreen = () => {
                             selectedValue={exercise}
                             onValueChange={(itemValue) => setExercise(itemValue)}
                         >
+                            <Picker.Item key={0} label={"Select Exercise"} value={null} />
                             {catalog.map((item: string, index: number) => (
                                 <Picker.Item key={index} label={item} value={item} />
                             ))}
