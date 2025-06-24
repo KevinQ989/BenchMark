@@ -31,17 +31,17 @@ As frequent gym-goers, we have tried numerous apps designed to assist with worko
    ```sh
    npm install
    ```
-4.  **Set up Google Gemini API Key**
+4. **Set up Google Gemini API Key**
 
-   To use the AI workout recommendations feature, you'll need to set up a Google Gemini API key:
+To use the AI workout recommendations feature, you'll need to set up a Google Gemini API key:
 
-   - Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a new API key
-   - Create a `.env` file in the root directory of the project
-   - Add your API key to the `.env` file:
-     ```
-     GOOGLE_GEMINI_API_KEY=your_api_key_here
-     ```
-   - Replace `your_api_key_here` with your actual Google Gemini API key
+- Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a new API key
+- Create a `.env` file in the root directory of the project
+- Add your API key to the `.env` file:
+  ```
+  GOOGLE_GEMINI_API_KEY=your_api_key_here
+  ```
+- Replace `your_api_key_here` with your actual Google Gemini API key
 
 5. Run the application:
    ```sh
