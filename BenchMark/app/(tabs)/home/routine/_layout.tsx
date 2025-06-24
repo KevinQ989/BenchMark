@@ -6,6 +6,13 @@ const RoutineLayout = () => {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="addExercise" />
+      <Stack.Screen
+        name="aiRecommendations"
+        options={{
+          title: "AI Recommendations",
+          headerBackTitle: "Routine",
+        }}
+      />
     </Stack>
   );
 };

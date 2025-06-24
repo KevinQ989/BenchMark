@@ -1,39 +1,75 @@
-# Welcome to your Expo app 👋
+# BenchMark
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Aim
 
-## Get started
+BenchMark aims to be an all-in-one AI-powered gym companion that makes going to the gym easier and more enjoyable by helping out with personalised workout plans, progress gamification with friends, and an exercise form correction tool.
 
-1. Install dependencies
+## Motivation
+
+As frequent gym-goers, we have tried numerous apps designed to assist with workouts. However, we found that many lacked several valuable features, or offered different features that would have been more convenient if combined into a single app. This led us to identify an opportunity to develop a comprehensive platform that not only helps users plan and track their workouts, but also integrates personalized recommendations, progress monitoring, community support, and gamification.
+
+## Features
+
+- User Authentication
+- Workout Tracking & History
+- Exercise Catalog
+- AI Workout Plan Generation
+- Community Features
+- Progress Visualisation
+
+## Setup Instructions
+
+### Prerequisites
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. **Set up Google Gemini API Key**
 
+   To use the AI workout recommendations feature, you'll need to set up a Google Gemini API key:
+
+   - Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a new API key
+   - Create a `.env` file in the root directory of the project
+   - Add your API key to the `.env` file:
+     ```
+     GOOGLE_GEMINI_API_KEY=your_api_key_here
+     ```
+   - Replace `your_api_key_here` with your actual Google Gemini API key
+
+3. Start the development server:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Testing Instructions
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+1. Clone this repository:
+   ```sh
+   git clone https://github.com/KevinQ989/BenchMark.git
+   ```
+2. Navigate to the project directory:
+   ```sh
+   cd BenchMark
+   ```
+3. Install dependencies:
+   ```sh
+   npm install
+   ```
+4. Set up your Google Gemini API key as described above
+5. Run the application:
+   ```sh
+   npx expo run:ios
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Alternatively,
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+1. Download the .tar file from https://drive.google.com/file/d/1aau7GckEsyxOPJF4gh1n8e6CFO9uiB61/view?usp=sharing
+2. Drag the downloaded .tar file to desktop and double-click it
+3. Open XCode's simulator
+4. Drag the BenchMark app into the simulator
 
 ## Learn more
 
