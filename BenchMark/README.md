@@ -17,33 +17,6 @@ As frequent gym-goers, we have tried numerous apps designed to assist with worko
 - Community Features
 - Progress Visualisation
 
-## Setup Instructions
-
-### Prerequisites
-
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. **Set up Google Gemini API Key**
-
-   To use the AI workout recommendations feature, you'll need to set up a Google Gemini API key:
-
-   - Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a new API key
-   - Create a `.env` file in the root directory of the project
-   - Add your API key to the `.env` file:
-     ```
-     GOOGLE_GEMINI_API_KEY=your_api_key_here
-     ```
-   - Replace `your_api_key_here` with your actual Google Gemini API key
-
-3. Start the development server:
-   ```bash
-   npx expo start
-   ```
-
 ## Testing Instructions
 
 1. Clone this repository:
@@ -58,7 +31,18 @@ As frequent gym-goers, we have tried numerous apps designed to assist with worko
    ```sh
    npm install
    ```
-4. Set up your Google Gemini API key as described above
+4.  **Set up Google Gemini API Key**
+
+   To use the AI workout recommendations feature, you'll need to set up a Google Gemini API key:
+
+   - Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create a new API key
+   - Create a `.env` file in the root directory of the project
+   - Add your API key to the `.env` file:
+     ```
+     GOOGLE_GEMINI_API_KEY=your_api_key_here
+     ```
+   - Replace `your_api_key_here` with your actual Google Gemini API key
+
 5. Run the application:
    ```sh
    npx expo run:ios
