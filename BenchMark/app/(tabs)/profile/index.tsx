@@ -1,4 +1,4 @@
-import { Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import auth from "@react-native-firebase/auth";
 import { collection, doc, getDoc, getDocs, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
@@ -23,6 +23,7 @@ const ProfileScreen = () => {
     
     const fetchUserData = async () => {
         try {
+            setLoading(true);
             const uid = auth().currentUser?.uid;
             if (uid) {
                 const docSnap = await getDoc(doc(db, "users", uid));
@@ -38,6 +39,8 @@ const ProfileScreen = () => {
         } catch (e: any) {
             const err = e as FirebaseError;
             Alert.alert("Fetch User Data Failed", err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -245,7 +248,9 @@ const ProfileScreen = () => {
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={{ paddingBottom: 50}}>
                 <View style={styles.titleContainer}>
-                    {photoURL ? (
+                    {loading ? (
+                        <ActivityIndicator size="small" color={"#430589"}/>
+                    ) : photoURL ? (
                         <Image
                             source={{ uri: photoURL }}
                             style={styles.profilePhoto}
@@ -254,13 +259,7 @@ const ProfileScreen = () => {
                         <IconSymbol size={28} name="person.fill" color={"#430589"} />
                     )}
                     <Text style={styles.title}>{username}</Text>
-                    <TouchableOpacity onPress={() => router.push({
-                        pathname: "/(tabs)/profile/editProfile",
-                        params: {
-                            username: username,
-                            photoURL: photoURL
-                        }
-                    })}>
+                    <TouchableOpacity onPress={() => router.push("/(tabs)/profile/editProfile")}>
                         <IconSymbol size={28} name="gearshape.fill" color={"#430954"} />
                     </TouchableOpacity>
                 </View>

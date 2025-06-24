@@ -1,21 +1,40 @@
-import { Alert, Button, Image, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Button, Image, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import auth from "@react-native-firebase/auth";
-import { doc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
+import { doc, getDoc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import storage from "@react-native-firebase/storage";
-import { useState } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { TextInput } from "react-native-gesture-handler";
 
 const EditProfileScreen = () => {
     const uid = auth().currentUser?.uid;
-    const params = useLocalSearchParams();
-    const [username, setUsername] = useState<string>(params.username as string|| '');
-    const [photoURL, setPhotoURL] = useState<string | null>(params.photoURL as string);
+    const [username, setUsername] = useState<string>('');
+    const [photoURL, setPhotoURL] = useState<string | null>(null);
     const [uploading, setUploading] = useState<boolean>(false);
     
+    const fetchUserData = async () => {
+        try {
+            const db = getFirestore();
+            const uid = auth().currentUser?.uid;
+            if (uid) {
+                const docSnap = await getDoc(doc(db, "users", uid));
+                const data = docSnap.data();
+                if (data) {
+                    setUsername(data.username);
+                    setPhotoURL(data.photoURL);
+                }
+            } else {
+                Alert.alert("Fetch User Data Failed", "No User Logged In");
+            }
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            Alert.alert("Fetch User Data Failed", err.message);
+        }
+    };
+
     const setProfilePhoto = async () => {
         const imageUri = await pickImage();
         if (imageUri) {
@@ -74,6 +93,10 @@ const EditProfileScreen = () => {
         }
     };
 
+    useEffect(() => {
+        fetchUserData();
+    }, [])
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.titleContainer}>
@@ -81,13 +104,17 @@ const EditProfileScreen = () => {
                 <Button title="Save Profile" onPress={saveProfile} />
             </View>
             <View style={styles.imageContainer}>
-                    {photoURL ? (
+                    {uploading ? (
+                        <ActivityIndicator size="large" />
+                    ) : photoURL ? (
                         <Image
                             source={{ uri: photoURL }}
                             style={styles.profilePhoto}
                         />
                     ) : (
-                        <IconSymbol size={28} name="person.fill" color={"#430589"} />
+                        <View style={styles.placeholderPhoto}>
+                            <IconSymbol size={60} name="person.fill" color={"#999999"} />
+                        </View>
                     )}
                 <Button title="Edit Profile Photo" onPress={setProfilePhoto} />
             </View>
@@ -126,6 +153,15 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 50,
         backgroundColor: "#F0F0F0"
+    },
+
+    placeholderPhoto: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: "#F0F0F0",
+        justifyContent: "center",
+        alignItems: "center"
     },
 
     fieldContainer: {
