@@ -13,6 +13,10 @@ const ProfileLayout = () => {
                 headerShown: false,
                 presentation: "modal"
             }} />
+            <Stack.Screen name="viewRecord" options={{
+                headerShown: false,
+                presentation: "modal"
+            }} />
         </Stack>
     )
 }

@@ -53,8 +53,13 @@ export interface Metric {
     value: string;
 }
 
-interface Record {
+export interface Record {
     date: Date;
+    weight: number;
+}
+
+export interface RecordParams {
+    date: string;
     weight: number;
 }
 

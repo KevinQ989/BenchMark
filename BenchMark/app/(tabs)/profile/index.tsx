@@ -1,6 +1,6 @@
-import { Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Button, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import auth from "@react-native-firebase/auth";
-import { collection, doc, getDoc, getDocs, getFirestore } from "@react-native-firebase/firestore";
+import { collection, doc, getDoc, getDocs, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import { useEffect, useState } from "react";
 import { Metric, RepMax } from "@/components/Types";
@@ -18,6 +18,7 @@ const ProfileScreen = () => {
     const [records, setRecords] = useState<RepMax[]>([]);
     const [photoURL, setPhotoURL] = useState<string | null>(null);
     const [workoutDates, setWorkoutDates] = useState<Date[]>([]);
+    const [goal, setGoal] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
     
     const fetchUserData = async () => {
@@ -43,13 +44,17 @@ const ProfileScreen = () => {
     const fetchMetrics = (map: { [key: string]: number } | undefined) => {
         let workouts;
         let duration;
+        let goal;
         if (map) {
             workouts = map.workouts ?? 0;
             duration = map.duration ?? 0;
+            goal = map.goal ?? 0;
         } else {
             workouts = 0;
             duration = 0;
+            goal = 0;
         }
+        setGoal(goal);
         setMetrics([
             {
                 metric: "Total Workouts",
@@ -168,7 +173,7 @@ const ProfileScreen = () => {
         barDataItems.forEach((item: barDataItem) => {
             count.push(item.value || 0)
         });
-        return Math.max(...count);
+        return Math.max(...count, goal);
     };
 
     const renderMetric = ({item} : {item: Metric}) => {
@@ -185,13 +190,40 @@ const ProfileScreen = () => {
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
         const date = last.date.toLocaleDateString();
         return (
-            <View style={styles.card}>
+            <TouchableOpacity style={styles.card} onPress={() => router.push({
+                pathname: "/(tabs)/profile/viewRecord",
+                params: {
+                    exercise: item.exercise,
+                    historyString: JSON.stringify(item.history.map(record => ({
+                        date: record.date.toISOString(),
+                        weight: record.weight
+                    })))
+                }
+            })}>
                 <Text style={styles.cardValue}>{last.weight}kg</Text>
                 <Text style={styles.cardDate}>{date}</Text>
                 <Text style={styles.cardName}>{item.exercise}</Text>
-            </View>
+            </TouchableOpacity>
         );
     }
+
+    const saveGoal = async () => {
+        try {
+            const uid = auth().currentUser?.uid;
+            if (uid) {
+                const db = getFirestore();
+                const docRef = doc(db, "users", uid);
+                await updateDoc(docRef, {
+                    ["metrics.goal"]: Math.min(Math.max(0, goal), 7)
+                });
+            } else {
+                Alert.alert("Set Goal Failed", "No User Logged In");
+            }
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            Alert.alert("Set Goal Failed", err.message);
+        }
+    };
 
     const formatDuration = (n: number) => {
         const totalSeconds = Math.floor(n);
@@ -283,9 +315,28 @@ const ProfileScreen = () => {
                                 color: '#666',
                                 fontSize: 12,
                             }}
+                            referenceLine1Position={goal}
+                            referenceLine1Config={{
+                                color: '#FF6B6B',
+                                dashWidth: 5,
+                                dashGap: 5,
+                                thickness: 2
+                            }}
+                            showReferenceLine1
                             disablePress
                             disableScroll
                         />
+                    </View>
+                    <View style={styles.goalContainer}>
+                        <TextInput
+                            style={styles.goalText}
+                            value={goal.toLocaleString()}
+                            onChangeText={(val) => setGoal(Number(val))}
+                            keyboardType="numeric"
+                        />
+                        <TouchableOpacity style={styles.buttonContainer} onPress={saveGoal}>
+                            <Text style={styles.buttonText}>Set Goal</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
                 <View style={styles.divider} />
@@ -396,6 +447,22 @@ const styles = StyleSheet.create({
         height: 1,
         backgroundColor: "#e0e0e0",
         marginVertical: 10
+    },
+
+    goalContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 20
+    },
+
+    goalText: {
+        textAlign: "center",
+        textAlignVertical: "center",
+        backgroundColor: "#4a9e02",
+        borderRadius: 10,
+        padding: 10,
+        marginTop: 16
     }
 });
 

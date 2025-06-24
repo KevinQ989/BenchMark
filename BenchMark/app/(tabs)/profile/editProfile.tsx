@@ -17,9 +17,9 @@ interface ProfileParams {
 
 const EditProfileScreen = () => {
     const uid = auth().currentUser?.uid;
-    const params = useLocalSearchParams<ProfileParams>();
-    const [username, setUsername] = useState<string>(params.username || '');
-    const [photoURL, setPhotoURL] = useState<string | null>(params.photoURL);
+    const params = useLocalSearchParams();
+    const [username, setUsername] = useState<string>(params.username as string|| '');
+    const [photoURL, setPhotoURL] = useState<string | null>(params.photoURL as string);
     const [uploading, setUploading] = useState<boolean>(false);
     
     const setProfilePhoto = async () => {
