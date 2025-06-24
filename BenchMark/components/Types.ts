@@ -44,6 +44,29 @@ export interface WorkoutRecord {
     description: string;
     exercises: Exercise[];
     date: Date;
+    duration: number;
+}
+
+// For general statistics tracking
+export interface Metric {
+    metric: string;
+    value: string;
+}
+
+export interface Record {
+    date: Date;
+    weight: number;
+}
+
+export interface RecordParams {
+    date: string;
+    weight: number;
+}
+
+// For 1RM tracking
+export interface RepMax {
+    exercise: string;
+    history: Record[];
 }
 
 //For friends functionality

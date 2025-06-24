@@ -6,6 +6,7 @@ import {
   TextInput,
   Text,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -20,6 +21,9 @@ import {
   getFirestore,
   setDoc,
   deleteDoc,
+  updateDoc,
+  increment,
+  getDoc,
 } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
@@ -135,34 +139,59 @@ const RoutineScreen = () => {
     }
   };
 
-  const endWorkout = async () => {
-    try {
-      const updatedExercises = exercises.map((exercise, exerciseIndex) => ({
-        ...exercise,
-        sets: exercise.sets.map((set, setIndex) => {
-          const key = `${exerciseIndex}-${setIndex}`;
-          const inputValue = inputs[key] || {};
-          return {
-            weight: inputValue.weight ? Number(inputValue.weight) : set.weight,
-            reps: inputValue.reps ? Number(inputValue.reps) : set.reps,
-          };
-        }),
-      }));
+    const endWorkout = async () => {
+        try {
+        const updatedExercises = exercises.map((exercise, exerciseIndex) => ({
+            ...exercise,
+            sets: exercise.sets.map((set, setIndex) => {
+            const key = `${exerciseIndex}-${setIndex}`;
+            const inputValue = inputs[key] || {};
+            return {
+                weight: inputValue.weight ? Number(inputValue.weight) : set.weight,
+                reps: inputValue.reps ? Number(inputValue.reps) : set.reps,
+            };
+            }),
+        }));
 
-      const uid = auth().currentUser?.uid;
-      await addDoc(collection(db, "users", uid, "myWorkouts"), {
-        routineName: routineName,
-        description: description,
-        exercises: updatedExercises,
-        date: new Date(),
-        duration: timer,
-      });
-      router.replace("/(tabs)/home");
-    } catch (e: any) {
-      const err = e as FirebaseError;
-      alert("End Workout Failed: " + err.message);
-    }
-  };
+        const uid = auth().currentUser?.uid;
+        await addDoc(collection(db, "users", uid, "myWorkouts"), {
+            routineName: routineName,
+            description: description,
+            exercises: updatedExercises,
+            date: new Date(),
+            duration: timer,
+        });
+        updateMetrics();
+        router.replace("/(tabs)/home");
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            alert("End Workout Failed: " + err.message);
+        }
+    };
+
+    const updateMetrics = async () => {
+        try {
+            const uid = auth().currentUser?.uid;
+            const docRef = doc(db, "users", uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                await updateDoc(docRef, {
+                    "metrics.workouts": increment(1),
+                    "metrics.duration": increment(timer)
+                });
+            } else {
+                await setDoc(docRef, {
+                    metrics: {
+                        workouts: 1,
+                        duration: timer
+                    }
+                }, {merge: true})
+            }
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            Alert.alert("Update Metrics Failed", err.message);
+        }
+    };
 
   const deleteRoutine = async () => {
     try {
