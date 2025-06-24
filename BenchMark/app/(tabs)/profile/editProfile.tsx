@@ -9,12 +9,6 @@ import * as ImagePicker from "expo-image-picker";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { TextInput } from "react-native-gesture-handler";
 
-interface ProfileParams {
-    id: string,
-    username: string,
-    photoURL: string
-}
-
 const EditProfileScreen = () => {
     const uid = auth().currentUser?.uid;
     const params = useLocalSearchParams();

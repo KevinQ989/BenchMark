@@ -1,11 +1,11 @@
-import { Alert, Button, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import auth from "@react-native-firebase/auth";
 import { collection, doc, getDoc, getDocs, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Metric, RepMax } from "@/components/Types";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Calendar } from "react-native-calendars";
 import { MarkedDates } from "react-native-calendars/src/types";
 import { BarChart, barDataItem } from "react-native-gifted-charts";
@@ -66,7 +66,7 @@ const ProfileScreen = () => {
             },
             {
                 metric: "Average Workout\nDuration",
-                value: formatDuration(duration / workouts)
+                value: formatDuration(workouts != 0 ? duration / workouts : 0)
             }
         ])
     };
@@ -233,11 +233,13 @@ const ProfileScreen = () => {
         return `${hours}h ${minutes}m ${seconds}s`;
     };
 
-    useEffect(() => {
-        fetchUserData();
-        fetchWorkoutDates();
-        fetchRecords();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchUserData();
+            fetchWorkoutDates();
+            fetchRecords();
+        }, [])
+    );
     
     return (
         <SafeAreaView style={styles.container}>

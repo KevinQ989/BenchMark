@@ -5,7 +5,7 @@ import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Exercise, RoutineParams } from "@/components/Types";
 import auth from "@react-native-firebase/auth";
-import { addDoc, collection, doc, getDoc, getFirestore, setDoc, updateDoc } from "@react-native-firebase/firestore";
+import { addDoc, collection, doc, getDoc, getFirestore, increment, setDoc, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
 const RoutineScreen = () => {
@@ -144,14 +144,17 @@ const RoutineScreen = () => {
             const docRef = doc(db, "users", uid);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                const oldMetrics = docSnap.data().metrics;
-                const newMetrics = {
-                    workouts: oldMetrics.workouts + 1,
-                    duration: oldMetrics.duration + timer
-                }
                 await updateDoc(docRef, {
-                    metrics: newMetrics
-                })
+                    "metrics.workouts": increment(1),
+                    "metrics.duration": increment(timer)
+                });
+            } else {
+                await setDoc(docRef, {
+                    metrics: {
+                        workouts: 1,
+                        duration: timer
+                    }
+                }, {merge: true})
             }
         } catch (e: any) {
             const err = e as FirebaseError;
