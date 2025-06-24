@@ -1,0 +1,66 @@
+import 'dotenv/config';
+
+export default {
+  expo: {
+    name: "BenchMark",
+    slug: "BenchMark",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/images/icon.png",
+    scheme: "benchmark",
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.anonymous.BenchMark",
+      buildNumber: "1",
+      googleServicesFile: "./GoogleService-Info.plist"
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/images/adaptive-icon.png",
+        backgroundColor: "#ffffff"
+      },
+      edgeToEdgeEnabled: true,
+      package: "com.anonymous.BenchMark",
+      googleServicesFile: "./google-services.json"
+    },
+    web: {
+      bundler: "metro",
+      output: "static",
+      favicon: "./assets/images/favicon.png"
+    },
+    plugins: [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/images/splash-icon.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            useFrameworks: "static"
+          }
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
+    ],
+    experiments: {
+      typedRoutes: true
+    },
+    extra: {
+      router: {},
+      eas: {
+        projectId: "a7512953-f1fe-45ad-b0a7-878ab0b8144a"
+      },
+      GOOGLE_GEMINI_API_KEY: process.env.GOOGLE_GEMINI_API_KEY
+    }
+  }
+}; 

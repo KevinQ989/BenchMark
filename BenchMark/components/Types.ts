@@ -68,3 +68,38 @@ export interface RepMax {
     exercise: string;
     history: Record[];
 }
+
+//For friends functionality
+export interface Friend {
+    id: string;
+    uid: string;
+    username: string;
+    email: string;
+    lastMessage?: string;
+    lastMessageTime?: Date;
+}
+
+export interface FriendRequest {
+    id: string;
+    fromUid: string;
+    fromUsername: string;
+    fromEmail: string;
+    toUid: string;
+    status: 'pending' | 'accepted' | 'rejected';
+    timestamp: Date;
+}
+
+export interface ChatMessage {
+    id: string;
+    senderUid: string;
+    senderUsername: string;
+    message: string;
+    timestamp: Date;
+}
+
+export interface Chat {
+    id: string;
+    participants: string[];
+    lastMessage?: string;
+    lastMessageTime?: Date;
+}
