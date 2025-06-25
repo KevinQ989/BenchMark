@@ -80,7 +80,7 @@ const EditProfileScreen = () => {
             if (uid) {
                 await updateDoc(doc(db, "users", uid), {
                     username: username,
-                    photoURL: photoURL
+                    photoURL: photoURL ?? null
                 })
             } else {
                 Alert.alert("Save Profile Failed", "No User Logged In")

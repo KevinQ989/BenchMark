@@ -219,6 +219,7 @@ const ProfileScreen = () => {
                 await updateDoc(docRef, {
                     ["metrics.goal"]: Math.min(Math.max(0, goal), 7)
                 });
+                Alert.alert("Success", `Weekly workout goal set at ${goal}`)
             } else {
                 Alert.alert("Set Goal Failed", "No User Logged In");
             }

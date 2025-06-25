@@ -59,6 +59,7 @@ const AddRecordScreen = () => {
                             }]
                         });
                     }
+                    Alert.alert("Success", `1RM added for ${exercise}`)
                     setExercise('');
                     setWeight(0);
                     setDate(new Date());
