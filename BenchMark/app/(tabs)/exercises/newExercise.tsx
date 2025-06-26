@@ -1,36 +1,44 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert  } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, SafeAreaView  } from "react-native";
 import { useState } from "react";
 import { FirebaseError } from "firebase/app";
 import { addDoc, collection, getFirestore } from "@react-native-firebase/firestore";
+import { Picker } from "@react-native-picker/picker";
 
 const NewExercisesScreen = () => {
     const db = getFirestore();
     const [exerciseName, setExerciseName] = useState<string>('');
-    const [target, setTarget] = useState<string>('');
-    const [subTarget, setSubTarget] = useState<string>('');
-    const [equipment, setEquipment] = useState<string>('');
+    const [target, setTarget] = useState<string | null>(null);
+    const [subTarget, setSubTarget] = useState<string | null>(null);
+    const [equipment, setEquipment] = useState<string | null>(null);
+
+    const targets = new Map<string, string[]>();
+    targets.set("Chest", ["Upper Pectorals", "Lower Pectorals"]);
+    targets.set("Back", ["Lats", "Rhomboids", "Trapezius", "Rear Deltoids"]);
+    targets.set("Arms", ["Biceps", "Triceps"]);
+    targets.set("Shoulders", ["Front Deltoids", "Side Deltoids"]);
+    targets.set("Legs", ["Glutes", "Hamstrings", "Quadriceps", "Calves"]);
+    targets.set("Core", ["Upper Abs", "Lower Abs", "Obliques"]);
+    const equipments : string[] = ["Barbell", "Dumbbell", "Machine", "Cable", "Bodyweight"];
 
     const addExercise = async () => {
         if (exerciseName === '') {
             Alert.alert("Failed", "Exercise must have a name");
-        } else if (target === '') {
+        } else if (target === null) {
             Alert.alert("Failed", "Exercise must have a target");
-        } else if (equipment === '') {
+        } else if (equipment === null) {
             Alert.alert("Failed", "Exercise must have an equipment")
         } else {
             try {
-                const newExercise = {
+                await addDoc(collection(db, "exercises"), {
                     exerciseName: exerciseName,
                     target: target,
                     subTarget: subTarget,
                     equipment: equipment
-                }
-                const docRef = await addDoc(collection(db, "exercises"), newExercise);
+                });
                 setExerciseName('');
-                setTarget('');
-                setSubTarget('');
-                setEquipment('');
+                setTarget(null);
+                setSubTarget(null);
+                setEquipment(null);
                 Alert.alert("Success", "Exercise Added Succesfully");
             } catch (e: any) {
                 const err = e as FirebaseError;
@@ -40,105 +48,169 @@ const NewExercisesScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.card}>
+        <SafeAreaView style={styles.container}>
+            <Text style={styles.title}>Add Exercise</Text>
+            <View style={styles.content}>
                 <View style={styles.fieldContainer}>
-                    <ThemedText type="subtitle" style={styles.label}>Exercise Name: </ThemedText>
+                    <Text style={styles.fieldLabel}>Exercise Name</Text>
                     <TextInput
-                        style={styles.input}
+                        style={styles.textInput}
                         value={exerciseName}
                         onChangeText={setExerciseName}
-                        placeholder="Exercise Name"
+                        placeholder="Set Exercise Name"
                     />
                 </View>
                 <View style={styles.fieldContainer}>
-                    <ThemedText type="subtitle" style={styles.label}>Target: </ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        value={target}
-                        onChangeText={setTarget}
-                        placeholder="Target"
-                    />
+                    <Text style={styles.fieldLabel}>Target</Text>
+                    <View style={styles.picker}>
+                        <Picker
+                            selectedValue={target}
+                            onValueChange={(itemValue) => {
+                                setTarget(itemValue);
+                                setSubTarget(null);
+                            }}
+                        >
+                            <Picker.Item key={0} label={"Select Target"} value={null} />
+                            {[...targets.keys()].map((item: string, index: number) => (
+                                <Picker.Item key={index} label={item} value={item} />
+                            ))}
+                        </Picker>
+                    </View>
                 </View>
                 <View style={styles.fieldContainer}>
-                    <ThemedText type="subtitle" style={styles.label}>Sub-Target: </ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        value={subTarget}
-                        onChangeText={setSubTarget}
-                        placeholder="Sub-Target"
-                    />
+                    <Text style={styles.fieldLabel}>Sub-Target</Text>
+                    <View style={styles.picker}>
+                        {target ? (
+                            <Picker
+                                selectedValue={subTarget}
+                                onValueChange={(itemValue) => setSubTarget(itemValue)}
+                            >
+                                <Picker.Item key={0} label={"Select Sub-Target"} value={null} />
+                                {(targets.get(target) ?? []).map((item: string, index: number) => (
+                                    <Picker.Item key={index} label={item} value={item} />
+                                ))}
+                            </Picker>
+                        ) : (
+                            <Text style={styles.textInput}>Select Target First</Text>
+                        )}
+                    </View>
                 </View>
                 <View style={styles.fieldContainer}>
-                    <ThemedText type="subtitle" style={styles.label}>Equipment: </ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        value={equipment}
-                        onChangeText={setEquipment}
-                        placeholder="Equipment"
-                    />
+                    <Text style={styles.fieldLabel}>Equipment</Text>
+                    <View style={styles.picker}>
+                        <Picker
+                            selectedValue={equipment}
+                            onValueChange={(itemValue) => setEquipment(itemValue)}
+                        >
+                            <Picker.Item key={0} label={"Select Equipment"} value={null} />
+                            {equipments.map((item: string, index: number) => (
+                                <Picker.Item key={index + 1} label={item} value={item} />
+                            ))}
+                        </Picker>
+                    </View>
                 </View>
-                <TouchableOpacity style={styles.submitButton} onPress={addExercise}>
-                    <Text style={styles.submitText}>Add Exercise</Text>
+                <TouchableOpacity style={styles.buttonContainer} onPress={addExercise}>
+                    <Text style={styles.buttonText}>Add 1RM</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </SafeAreaView>
     )
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f5f5",
-        padding: 16
+        margin: 10,
+        backgroundColor: "#FFF"
     },
 
-    card: {
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 20,
-        elevation: 3,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84
+    title: {
+        fontSize: 24,
+        fontWeight: "600",
+        textAlign: "center",
+        color: "#212529",
+        paddingVertical: 20,
+        backgroundColor: "#FFFFFF",
+        borderBottomWidth: 1,
+        borderBottomColor: "#E9ECEF"
+    },
+
+    content: {
+        flex: 1,
+        padding: 20
     },
 
     fieldContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20
+        marginBottom: 32
     },
 
-    label: {
+    fieldLabel: {
         fontSize: 16,
-        fontWeight: "600"
+        fontWeight: "500",
+        color: "#495057",
+        marginBottom: 12,
+        letterSpacing: 0.5
     },
 
-    input: {
-        backgroundColor: "#f5f5f5",
-        borderRadius: 8,
-        padding: 12,
-        fontSize: 16,
+    picker: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: "#ddd"
+        borderColor: "#DEE2E6",
+        shadowColor: "#000000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        height: 56,
+        justifyContent: "center",
+        overflow: "hidden"
     },
 
-    submitButton: {
-        backgroundColor: "#4a90e2",
-        borderRadius: 8,
-        padding: 16,
-        alignItems: "center",
-        marginTop: 10
-    },
-
-    submitText: {
-        color: "#fff",
+    textInput: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#DEE2E6",
+        paddingHorizontal: 16,
+        paddingVertical: 16,
         fontSize: 16,
-        fontWeight: "600"
+        color: "#212529",
+        shadowColor: "#000000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        height: 56
+    },
+
+    buttonContainer: {
+        backgroundColor: "#007AFF",
+        borderRadius: 12,
+        paddingVertical: 16,
+        marginTop: 40,
+        shadowColor: "#007AFF",
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6
+    },
+
+    buttonText: {
+        color: "#FFFFFF",
+        fontSize: 18,
+        fontWeight: "600",
+        textAlign: "center",
+        letterSpacing: 0.5
     }
 });
 
