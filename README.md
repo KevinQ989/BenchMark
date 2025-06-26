@@ -42,6 +42,7 @@ To use the AI workout recommendations feature, you'll need to set up a Google Ge
   GOOGLE_GEMINI_API_KEY=your_api_key_here
   ```
 - Replace `your_api_key_here` with your actual Google Gemini API key
+- If you forgot to do this step before running the app, make sure to restart the server after adding the .env file!
 
 5. Run the application:
    ```sh
