@@ -6,7 +6,7 @@ BenchMark aims to be an all-in-one AI-powered gym companion that makes going to 
 
 ## Motivation
 
-As frequent gym-goers, we have tried numerous apps designed to assist with workouts. However, we found that many lacked several valuable features, or offered different features that would have been more convenient if combined into a single app. This led us to identify an opportunity to develop a comprehensive platform that not only helps users plan and track their workouts, but also integrates personalized recommendations, progress monitoring, community support, and gamification.
+As frequent gym-goers, we have tried numerous apps designed to assist with workouts. However, we found that many lacked several valuable features, or offered different features that would have been more convenient if combined into a single app. This led us to identify an opportunity to develop a comprehensive platform that not only helps users plan and track their workouts, but also integrates personalized recommendations, progress monitoring, and community features.
 
 ## Features
 
