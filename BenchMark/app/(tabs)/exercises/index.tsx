@@ -58,8 +58,8 @@ const ExercisesScreen = () => {
     }, []);
 
     useEffect(() => {
-        setTarget(filterParams.selectedTargets ? JSON.parse(filterParams.selectedTargets) : []);
-        setEquipment(filterParams.selectedEquipment ? JSON.parse(filterParams.selectedEquipment) : []);
+        setTarget(filterParams.selectedTargets ? JSON.parse(filterParams.selectedTargets as string) : []);
+        setEquipment(filterParams.selectedEquipment ? JSON.parse(filterParams.selectedEquipment as string) : []);
     }, [filterParams.selectedTargets, filterParams.selectedEquipment]);
 
     useEffect(() => {
