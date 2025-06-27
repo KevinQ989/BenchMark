@@ -22,7 +22,7 @@ import {
   deleteDoc,
 } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
-import { Friend } from "@/components/Types";
+import { Friend } from "@/constants/Types";
 import { FriendListItem } from "@/components/FriendListItem";
 import { useFocusEffect } from "@react-navigation/native";
 

@@ -15,7 +15,7 @@ import {
   getFirestore,
 } from "@react-native-firebase/firestore";
 import React from "react";
-import { Exercise, WorkoutRecord } from "@/components/Types";
+import { Exercise, WorkoutRecord } from "@/constants/Types";
 import { FirebaseError } from "firebase/app";
 import { useFocusEffect } from "@react-navigation/native";
 

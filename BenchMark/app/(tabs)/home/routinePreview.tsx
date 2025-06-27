@@ -9,8 +9,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { RoutineParams } from "@/components/Types";
-import { Exercise } from "@/components/Types";
+import { RoutineParams, Exercise } from "@/constants/Types";
 import { doc, deleteDoc, getFirestore } from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
 import { FirebaseError } from "firebase/app";

@@ -1,7 +1,7 @@
 import { Alert, SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { FirebaseError } from "firebase/app";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { ExerciseInfo} from "@/components/Types";
+import { ExerciseInfo} from "@/constants/Types";
 import { useEffect, useState } from "react";
 import { collection, getDocs, getFirestore, query } from "@react-native-firebase/firestore";
 

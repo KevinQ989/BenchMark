@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import React from "react";
 import { ThemedText } from "@/components/ThemedText";
-import { Exercise, RoutineParams } from "@/components/Types";
+import { Exercise, RoutineParams } from "@/constants/Types";
 import auth from "@react-native-firebase/auth";
 import {
   addDoc,

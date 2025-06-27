@@ -20,10 +20,9 @@ import {
   getFirestore,
   query,
 } from "@react-native-firebase/firestore";
-import { HelloWave } from "@/components/HelloWave";
 import { ThemedText } from "@/components/ThemedText";
 import React from "react";
-import { Exercise, Routine } from "@/components/Types";
+import { Exercise, Routine } from "@/constants/Types";
 import { FirebaseError } from "firebase/app";
 import { useFocusEffect } from "@react-navigation/native";
 

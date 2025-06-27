@@ -1,6 +1,6 @@
 import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { Record, RecordParams } from "@/components/Types";
+import { Record, RecordParams } from "@/constants/Types";
 import { LineChart, lineDataItem } from "react-native-gifted-charts";
 
 const ViewRecordScreen = () => {

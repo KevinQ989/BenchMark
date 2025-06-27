@@ -23,7 +23,7 @@ import {
   getDoc,
 } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
-import { FriendRequest } from "@/components/Types";
+import { FriendRequest } from "@/constants/Types";
 import { FriendRequestItem } from "@/components/FriendRequestItem";
 
 const FriendRequestsScreen = () => {

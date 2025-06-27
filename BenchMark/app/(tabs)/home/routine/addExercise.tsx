@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { FirebaseError } from "firebase/app";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { ExerciseInfo, RoutineParams } from "@/components/Types";
+import { ExerciseInfo, RoutineParams } from "@/constants/Types";
 import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import {

@@ -3,7 +3,7 @@ import auth from "@react-native-firebase/auth";
 import { collection, doc, getDoc, getDocs, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import { useCallback, useState } from "react";
-import { Metric, RepMax } from "@/components/Types";
+import { Metric, RepMax } from "@/constants/Types";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Calendar } from "react-native-calendars";

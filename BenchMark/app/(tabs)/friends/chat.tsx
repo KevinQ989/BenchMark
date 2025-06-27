@@ -29,7 +29,7 @@ import {
   setDoc,
 } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
-import { ChatMessage } from "@/components/Types";
+import { ChatMessage } from "@/constants/Types";
 
 const ChatScreen = () => {
   const router = useRouter();
