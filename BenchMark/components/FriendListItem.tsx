@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from "react-native";
-import { Friend } from "./Types";
+import { Friend } from "@/constants/Types";
 
 interface FriendListItemProps {
   friend: Friend;

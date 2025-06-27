@@ -1,7 +1,17 @@
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { 
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    View
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { Record, RecordParams } from "@/components/Types";
-import { LineChart, lineDataItem } from "react-native-gifted-charts";
+import { RecordParams } from "@/constants/Types";
+import { LineChart } from "react-native-gifted-charts";
+import {
+    toLineData,
+    getBest,
+    getLatest
+} from "@/utils/recordUtils";
 
 const ViewRecordScreen = () => {
     const params = useLocalSearchParams();
@@ -10,30 +20,6 @@ const ViewRecordScreen = () => {
         date: new Date(record.date),
         weight: record.weight
     }));
-
-    const toLineData = (records: Record[]) => {
-        let data: lineDataItem[] = [];
-        records
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .forEach((record: Record) => data.push({
-            value: record.weight,
-            label: record.date.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short"
-            })
-        }))
-        return data;
-    };
-
-    const getBest = (records: Record[]) => {
-        return Math.max(...records.map((record: Record) => record.weight));
-    };
-
-    const getLatest = (records: Record[]) => {
-        return records
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .map((record: Record) => record.weight)[0];
-    };
 
     return (
         <SafeAreaView style={styles.container}>

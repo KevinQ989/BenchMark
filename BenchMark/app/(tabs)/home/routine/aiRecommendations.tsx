@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { ThemedText } from "@/components/ThemedText";
-import { Exercise, ExerciseInfo } from "@/components/Types";
+import { Exercise, ExerciseInfo } from "@/constants/Types";
 import Constants from "expo-constants";
 import {
   collection,
