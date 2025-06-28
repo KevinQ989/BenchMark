@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
-    "@google/genai": "^1.5.1",
+    "@google/generative-ai": "^0.24.1",
     "@react-native-community/datetimepicker": "8.3.0",
     "@react-native-firebase/app": "^22.2.0",
     "@react-native-firebase/auth": "^22.2.0",
