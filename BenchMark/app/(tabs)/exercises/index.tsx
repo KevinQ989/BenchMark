@@ -1,9 +1,22 @@
-import { Alert, SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { 
+    Alert,
+    SafeAreaView,
+    View,
+    Text,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity
+} from "react-native";
 import { FirebaseError } from "firebase/app";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { ExerciseInfo} from "@/components/Types";
-import { useEffect, useState } from "react";
-import { collection, getDocs, getFirestore, query } from "@react-native-firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { 
+    collection,
+    getDocs,
+    getFirestore,
+    query
+} from "@react-native-firebase/firestore";
 
 const ExercisesScreen = () => {
     const db = getFirestore();
@@ -53,9 +66,11 @@ const ExercisesScreen = () => {
         )
     };
 
-    useEffect(() => {
-        fetchExercises();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchExercises();
+        }, [])
+    );
 
     useEffect(() => {
         setTarget(filterParams.selectedTargets ? JSON.parse(filterParams.selectedTargets as string) : []);

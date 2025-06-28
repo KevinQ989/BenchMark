@@ -2,7 +2,7 @@ import { ActivityIndicator, Alert, FlatList, Image, SafeAreaView, ScrollView, St
 import auth from "@react-native-firebase/auth";
 import { collection, doc, getDoc, getDocs, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
-import { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { Metric, RepMax } from "@/components/Types";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -238,7 +238,7 @@ const ProfileScreen = () => {
     };
 
     useFocusEffect(
-        useCallback(() => {
+        React.useCallback(() => {
             fetchUserData();
             fetchWorkoutDates();
             fetchRecords();
