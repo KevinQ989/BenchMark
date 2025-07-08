@@ -25,10 +25,8 @@ import { useCallback, useState } from "react";
 import { Metric, RepMax } from "@/constants/Types";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Calendar } from "react-native-calendars";
 import { BarChart } from "react-native-gifted-charts";
 import {
-    toMarkedDates,
     toBarData,
     getMax,
     formatDuration
@@ -255,12 +253,12 @@ const ProfileScreen = () => {
                     <Text style={styles.subtitle}>Weekly Workout Goal</Text>
                     <View style={styles.subContainer}>
                         <BarChart
-                            data={toBarData(workoutDates)}
+                            data={toBarData(workoutDates, new Date())}
                             barWidth={22}
                             barBorderRadius={4}
                             frontColor="#177AD5"
                             stepValue={1}
-                            maxValue={getMax(toBarData(workoutDates), goal) + 1}
+                            maxValue={getMax(toBarData(workoutDates, new Date()), goal) + 1}
                             yAxisThickness={0}
                             xAxisThickness={0}
                             rotateLabel
@@ -296,14 +294,6 @@ const ProfileScreen = () => {
                             <Text style={styles.buttonText}>Set Goal</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-                <View style={styles.divider} />
-
-                <View style={styles.subContainer}>
-                    <Text style={styles.subtitle}>Workout Dates</Text>
-                    <Calendar
-                        markedDates={toMarkedDates(workoutDates)}
-                    />
                 </View>
                 <View style={styles.divider} />
             </ScrollView>
