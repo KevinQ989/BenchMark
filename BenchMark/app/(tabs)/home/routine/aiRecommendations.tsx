@@ -19,6 +19,7 @@ import {
   getFirestore,
 } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 type WorkoutType = "push" | "pull" | "legs" | "full-body";
 
@@ -213,34 +214,14 @@ EXERCISES:
 EXPLANATION:
 [Your explanation of why these exercises were chosen for this specific workout type and how they work together within the time constraint]`;
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: prompt,
-                  },
-                ],
-              },
-            ],
-          }),
-        }
-      );
+      // Initialize the Google Generative AI client
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-      const data = await response.json();
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const generatedText = response.text();
 
-      if (data.error) {
-        throw new Error(data.error.message || "API request failed");
-      }
-
-      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       setAiResponse(generatedText || "No response received from AI.");
     } catch (error) {
       console.error("Error getting AI recommendations:", error);
