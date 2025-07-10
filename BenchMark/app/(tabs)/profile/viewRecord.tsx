@@ -16,6 +16,7 @@ import {
 const ViewRecordScreen = () => {
     const params = useLocalSearchParams();
     const exercise = params.exercise;
+    
     const history = JSON.parse(params.historyString as string).map((record: RecordParams) => ({
         date: new Date(record.date),
         weight: record.weight

@@ -1,78 +1,30 @@
 import React, { useState } from "react";
 import {
-	Alert,
-	View,
 	FlatList,
-	SafeAreaView,
-	Text,
-	StyleSheet,
 	RefreshControl,
+	SafeAreaView,
+	StyleSheet,
+	Text,
+	View
 } from "react-native";
-import auth from "@react-native-firebase/auth";
-import {
-	collection,
-	getDocs,
-	getFirestore,
-} from "@react-native-firebase/firestore";
 import { WorkoutRecord } from "@/constants/Types";
-import { FirebaseError } from "firebase/app";
 import { useFocusEffect } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import { HistoryWorkoutItem } from "@/components/HistoryWorkoutItem";
 import { MarkedDates } from "react-native-calendars/src/types";
+import { fetchHistory } from "@/utils/firestoreFetchUtils";
 
 const HistoryScreen = () => {
-	const db = getFirestore();
 	const [selected, setSelected] = useState<string>(new Date().toISOString().slice(0, 10));
 	const [history, setHistory] = useState<WorkoutRecord[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
 
-	const fetchHistory = async () => {
-		try {
-			const uid = auth().currentUser?.uid;
-			if (!uid) {
-				Alert.alert("Error", "User not authenticated");
-				return;
-			}
-
-			const querySnapshot = await getDocs(
-				collection(db, "users", uid, "myWorkouts")
-			);
-			const history = querySnapshot.docs.map((doc) => {
-				const data = doc.data();
-				const exercises = data.exercises.map(
-					(exercise: any, exerciseIndex: number) => {
-						const sets = exercise.sets.map((set: any, setIndex: number) => ({
-							setNum: setIndex + 1,
-							weight: set.weight,
-							reps: set.reps,
-						}));
-
-						return {
-							exerciseName: exercise.exerciseName,
-							sets: sets,
-						};
-					}
-				);
-
-				return {
-					id: doc.id,
-					routineName: data.routineName,
-					description: data.description,
-					exercises: exercises,
-					date: data.date.toDate()
-				};
-			});
-			const sortedHistory = history.sort((x, y) => y.date - x.date);
-			setHistory(sortedHistory);
-		} catch (e: any) {
-			const err = e as FirebaseError;
-			Alert.alert("Fetch History Failed:", err.message);
-		}
+	const handleFetchHistory = async () => {
+		const history = await fetchHistory();
+		setHistory(history.sort((x, y) => y.date - x.date));
 	};
 
 	const filterHistory = (date: string, history: WorkoutRecord[]) => {
-		console.log(date);
 		return history.filter((item: WorkoutRecord) => item.date.toISOString().slice(0, 10) === date);
 	};
 
@@ -99,7 +51,7 @@ const HistoryScreen = () => {
 
 	useFocusEffect(
 		React.useCallback(() => {
-			fetchHistory();
+			handleFetchHistory();
 		}, [])
 	);
 

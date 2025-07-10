@@ -1,13 +1,23 @@
-import { ActivityIndicator, Alert, Button, Image, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import {
+    ActivityIndicator,
+    Alert,
+    Button,
+    Image,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    View
+} from "react-native";
 import auth from "@react-native-firebase/auth";
-import { doc, getDoc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import storage from "@react-native-firebase/storage";
 import { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { TextInput } from "react-native-gesture-handler";
+import { UserData } from "@/constants/Types";
+import { fetchUserData } from "@/utils/firestoreFetchUtils";
+import { saveUserData } from "@/utils/firestoreSaveUtils";
 
 const EditProfileScreen = () => {
     const uid = auth().currentUser?.uid;
@@ -15,24 +25,12 @@ const EditProfileScreen = () => {
     const [photoURL, setPhotoURL] = useState<string | null>(null);
     const [uploading, setUploading] = useState<boolean>(false);
     
-    const fetchUserData = async () => {
-        try {
-            const db = getFirestore();
-            const uid = auth().currentUser?.uid;
-            if (uid) {
-                const docSnap = await getDoc(doc(db, "users", uid));
-                const data = docSnap.data();
-                if (data) {
-                    setUsername(data.username);
-                    setPhotoURL(data.photoURL);
-                }
-            } else {
-                Alert.alert("Fetch User Data Failed", "No User Logged In");
-            }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch User Data Failed", err.message);
-        }
+    const handleFetchUserData = async () => {
+        const uid = auth().currentUser?.uid;
+        if (!uid) return;
+        const userData: UserData = await fetchUserData(uid);
+        setUsername(userData.username);
+        setPhotoURL(userData.photoURL);
     };
 
     const setProfilePhoto = async () => {
@@ -74,34 +72,19 @@ const EditProfileScreen = () => {
         }
     };
 
-    const saveProfile = async () => {
-        try {
-            const db = getFirestore();
-            if (uid) {
-                await updateDoc(doc(db, "users", uid), {
-                    username: username,
-                    photoURL: photoURL ?? null
-                })
-            } else {
-                Alert.alert("Save Profile Failed", "No User Logged In")
-            }
-            const router = useRouter();
-            router.replace("/profile");
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Save Profile Failed", err.message);
-        }
+    const handleSaveUserData = async () => {
+        await saveUserData(username, photoURL);
     };
 
     useEffect(() => {
-        fetchUserData();
+        handleFetchUserData();
     }, [])
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.titleContainer}>
                 <Button title="Sign Out" onPress={() => auth().signOut()} />
-                <Button title="Save Profile" onPress={saveProfile} />
+                <Button title="Save Profile" onPress={handleSaveUserData} />
             </View>
             <View style={styles.imageContainer}>
                     {uploading ? (

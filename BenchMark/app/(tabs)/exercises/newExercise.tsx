@@ -1,11 +1,17 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, SafeAreaView  } from "react-native";
+import {
+    Alert,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
 import { useState } from "react";
-import { FirebaseError } from "firebase/app";
-import { addDoc, collection, getFirestore } from "@react-native-firebase/firestore";
 import { Picker } from "@react-native-picker/picker";
+import { addExercise } from "@/utils/firestoreSaveUtils";
 
 const NewExercisesScreen = () => {
-    const db = getFirestore();
     const [exerciseName, setExerciseName] = useState<string>('');
     const [target, setTarget] = useState<string | null>(null);
     const [subTarget, setSubTarget] = useState<string | null>(null);
@@ -20,7 +26,7 @@ const NewExercisesScreen = () => {
     targets.set("Core", ["Upper Abs", "Lower Abs", "Obliques"]);
     const equipments : string[] = ["Barbell", "Dumbbell", "Machine", "Cable", "Bodyweight"];
 
-    const addExercise = async () => {
+    const handleAdd = async () => {
         if (exerciseName === '') {
             Alert.alert("Failed", "Exercise must have a name");
         } else if (target === null) {
@@ -28,21 +34,12 @@ const NewExercisesScreen = () => {
         } else if (equipment === null) {
             Alert.alert("Failed", "Exercise must have an equipment")
         } else {
-            try {
-                await addDoc(collection(db, "exercises"), {
-                    exerciseName: exerciseName,
-                    target: target,
-                    subTarget: subTarget,
-                    equipment: equipment
-                });
+            const success = await addExercise(exerciseName, target, subTarget, equipment);
+            if (success) {
                 setExerciseName('');
                 setTarget(null);
                 setSubTarget(null);
                 setEquipment(null);
-                Alert.alert("Success", "Exercise Added Succesfully");
-            } catch (e: any) {
-                const err = e as FirebaseError;
-                Alert.alert("Add Exercise Failed", err.message);
             }
         }
     };
@@ -109,7 +106,7 @@ const NewExercisesScreen = () => {
                         </Picker>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.buttonContainer} onPress={addExercise}>
+                <TouchableOpacity style={styles.buttonContainer} onPress={handleAdd}>
                     <Text style={styles.buttonText}>Add 1RM</Text>
                 </TouchableOpacity>
             </View>
