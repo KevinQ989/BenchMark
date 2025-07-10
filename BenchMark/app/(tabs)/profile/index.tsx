@@ -1,6 +1,5 @@
 import { 
     ActivityIndicator,
-    Alert,
     FlatList,
     Image,
     SafeAreaView,
@@ -12,30 +11,20 @@ import {
     View
 } from "react-native";
 import auth from "@react-native-firebase/auth";
-import { 
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    getFirestore,
-    updateDoc
-} from "@react-native-firebase/firestore";
-import { FirebaseError } from "firebase/app";
 import { useCallback, useState } from "react";
-import { Metric, RepMax } from "@/constants/Types";
+import { Metric, RepMax, UserData } from "@/constants/Types";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Calendar } from "react-native-calendars";
 import { BarChart } from "react-native-gifted-charts";
 import {
-    toMarkedDates,
     toBarData,
     getMax,
     formatDuration
 } from "@/utils/profileUtils";
+import { fetchHistory, fetchRecords, fetchUserData } from "@/utils/firestoreFetchUtils";
+import { saveGoal } from "@/utils/firestoreSaveUtils";
 
 const ProfileScreen = () => {
-    const db = getFirestore();
     const router = useRouter();
     const [username, setUsername] = useState<string>('');
     const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -45,102 +34,36 @@ const ProfileScreen = () => {
     const [goal, setGoal] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
     
-    const fetchUserData = async () => {
-        try {
-            setLoading(true);
-            const uid = auth().currentUser?.uid;
-            if (uid) {
-                const docSnap = await getDoc(doc(db, "users", uid));
-                const data = docSnap.data();
-                if (data) {
-                    setUsername(data.username);
-                    setPhotoURL(data.photoURL);
-                    fetchMetrics(data.metrics);
-                }
-            } else {
-                Alert.alert("Fetch User Data Failed", "No User Logged In");
-            }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch User Data Failed", err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchMetrics = (map: { [key: string]: number } | undefined) => {
-        let workouts;
-        let duration;
-        let goal;
-        if (map) {
-            workouts = map.workouts ?? 0;
-            duration = map.duration ?? 0;
-            goal = map.goal ?? 0;
-        } else {
-            workouts = 0;
-            duration = 0;
-            goal = 0;
-        }
-        setGoal(goal);
+    const fetchData = async () => {
+        setLoading(true);
+        const uid = auth().currentUser?.uid;
+        if (!uid) return;
+        const userData: UserData = await fetchUserData(uid);
+        setUsername(userData.username);
+        setPhotoURL(userData.photoURL ?? null);
+        setGoal(userData.goal);
         setMetrics([
             {
                 metric: "Total Workouts",
-                value: workouts.toLocaleString()
+                value: userData.workouts.toLocaleString()
             },
             {
                 metric: "Total Workout\nDuration",
-                value: formatDuration(duration)
+                value: formatDuration(userData.duration)
             },
             {
                 metric: "Average Workout\nDuration",
-                value: formatDuration(workouts != 0 ? duration / workouts : 0)
+                value: formatDuration(userData.workouts != 0 ? userData.duration / userData.workouts : 0)
             }
         ])
-    };
+        setLoading(false);
 
-    const fetchWorkoutDates = async () => {
-        try {
-            const uid = auth().currentUser?.uid;
-            if (uid) {
-                const querySnapshot = await getDocs(collection(db, "users", uid, "myWorkouts"))
-                let dates: Date[] = [];
-                querySnapshot.forEach((doc) => {
-                    const date = doc.data().date.toDate();
-                    dates.push(date);
-                });
-                setWorkoutDates(dates);
-            } else {
-                Alert.alert("Fetch Workout Dates Failed", "No User Logged In");
-            }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch Workout Dates Failed", err.message);
-        }
-    };
+        const repmaxs: RepMax[] = await fetchRecords();
+        setRecords(repmaxs);
 
-    const fetchRecords = async () => {
-        try {
-            const uid = auth().currentUser?.uid;
-            if (uid) {
-                const querySnapshot = await getDocs(collection(db, "users", uid, "repmax"))
-                const repmaxs: RepMax[] = querySnapshot.docs.map((doc) => {
-                    const data = doc.data();
-                    return {
-                        exercise: data.exercise,
-                        history: data.history.map((record: any) => ({
-                            date: record.date.toDate(),
-                            weight: record.weight
-                        }))
-                    };
-                });
-                setRecords(repmaxs);
-            } else {
-                Alert.alert("Fetch Records Failed", "No User Logged In");
-            }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch Records Failed", err.message);
-        }
+        const history = await fetchHistory();
+        const dates: Date[] = history.map(item => item.date);
+        setWorkoutDates(dates);
     };
 
     const renderMetric = ({item} : {item: Metric}) => {
@@ -174,30 +97,13 @@ const ProfileScreen = () => {
         );
     };
 
-    const saveGoal = async () => {
-        try {
-            const uid = auth().currentUser?.uid;
-            if (uid) {
-                const db = getFirestore();
-                const docRef = doc(db, "users", uid);
-                await updateDoc(docRef, {
-                    ["metrics.goal"]: Math.min(Math.max(0, goal), 7)
-                });
-                Alert.alert("Success", `Weekly workout goal set at ${goal}`)
-            } else {
-                Alert.alert("Set Goal Failed", "No User Logged In");
-            }
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Set Goal Failed", err.message);
-        }
+    const handleSaveGoal = async () => {
+        await saveGoal(goal);
     };
 
     useFocusEffect(
         useCallback(() => {
-            fetchUserData();
-            fetchWorkoutDates();
-            fetchRecords();
+            fetchData();
         }, [])
     );
     
@@ -255,12 +161,12 @@ const ProfileScreen = () => {
                     <Text style={styles.subtitle}>Weekly Workout Goal</Text>
                     <View style={styles.subContainer}>
                         <BarChart
-                            data={toBarData(workoutDates)}
+                            data={toBarData(workoutDates, new Date())}
                             barWidth={22}
                             barBorderRadius={4}
                             frontColor="#177AD5"
                             stepValue={1}
-                            maxValue={getMax(toBarData(workoutDates), goal) + 1}
+                            maxValue={getMax(toBarData(workoutDates, new Date()), goal) + 1}
                             yAxisThickness={0}
                             xAxisThickness={0}
                             rotateLabel
@@ -292,18 +198,10 @@ const ProfileScreen = () => {
                             onChangeText={(val) => setGoal(Number(val))}
                             keyboardType="numeric"
                         />
-                        <TouchableOpacity style={styles.buttonContainer} onPress={saveGoal}>
+                        <TouchableOpacity style={styles.buttonContainer} onPress={handleSaveGoal}>
                             <Text style={styles.buttonText}>Set Goal</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-                <View style={styles.divider} />
-
-                <View style={styles.subContainer}>
-                    <Text style={styles.subtitle}>Workout Dates</Text>
-                    <Calendar
-                        markedDates={toMarkedDates(workoutDates)}
-                    />
                 </View>
                 <View style={styles.divider} />
             </ScrollView>

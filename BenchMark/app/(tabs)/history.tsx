@@ -1,236 +1,175 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  Alert,
-  View,
-  FlatList,
-  SafeAreaView,
-  Text,
-  StyleSheet,
-  RefreshControl,
+	FlatList,
+	RefreshControl,
+	SafeAreaView,
+	StyleSheet,
+	Text,
+	View
 } from "react-native";
-import auth from "@react-native-firebase/auth";
-import {
-  collection,
-  getDocs,
-  getFirestore,
-} from "@react-native-firebase/firestore";
-import React from "react";
-import { Exercise, WorkoutRecord } from "@/constants/Types";
-import { FirebaseError } from "firebase/app";
+import { WorkoutRecord } from "@/constants/Types";
 import { useFocusEffect } from "@react-navigation/native";
+import { Calendar } from "react-native-calendars";
+import { HistoryWorkoutItem } from "@/components/HistoryWorkoutItem";
+import { MarkedDates } from "react-native-calendars/src/types";
+import { fetchHistory } from "@/utils/firestoreFetchUtils";
 
 const HistoryScreen = () => {
-  const db = getFirestore();
-  const [history, setHistory] = useState<WorkoutRecord[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
+	const [selected, setSelected] = useState<string>(new Date().toISOString().slice(0, 10));
+	const [history, setHistory] = useState<WorkoutRecord[]>([]);
+	const [refreshing, setRefreshing] = useState(false);
 
-  const fetchHistory = async () => {
-    try {
-      const uid = auth().currentUser?.uid;
-      if (!uid) {
-        Alert.alert("Error", "User not authenticated");
-        return;
-      }
+	const handleFetchHistory = async () => {
+		const history = await fetchHistory();
+		setHistory(history.sort((x, y) => y.date - x.date));
+	};
 
-      const querySnapshot = await getDocs(
-        collection(db, "users", uid, "myWorkouts")
-      );
-      const history = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        const exercises = data.exercises.map(
-          (exercise: any, exerciseIndex: number) => {
-            const sets = exercise.sets.map((set: any, setIndex: number) => ({
-              setNum: setIndex + 1,
-              weight: set.weight,
-              reps: set.reps,
-            }));
+	const filterHistory = (date: string, history: WorkoutRecord[]) => {
+		return history.filter((item: WorkoutRecord) => item.date.toISOString().slice(0, 10) === date);
+	};
 
-            return {
-              exerciseName: exercise.exerciseName,
-              sets: sets,
-            };
-          }
-        );
+	const getMarkedDates = (history: WorkoutRecord[]) => {
+		const dates: Date[] = history.map((item: WorkoutRecord) => item.date);
+		const markedDates: MarkedDates = {};
+		dates.forEach((date: Date) => {
+			const dateString = date.toISOString().split("T")[0];
+			markedDates[dateString] = {
+				marked: true,
+				dotColor: "#4CAF50",
+				activeOpacity: 0.8
+			};
+	
+		});
+		return markedDates;
+	};
 
-        return {
-          id: doc.id,
-          routineName: data.routineName,
-          description: data.description,
-          exercises: exercises,
-          date: data.date.toDate(),
-        };
-      });
-      const sortedHistory = history.sort((x, y) => y.date - x.date);
-      setHistory(sortedHistory);
-    } catch (e: any) {
-      const err = e as FirebaseError;
-      Alert.alert("Fetch History Failed:", err.message);
-    }
-  };
+	const onRefresh = async () => {
+		setRefreshing(true);
+		await fetchHistory();
+		setRefreshing(false);
+	};
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchHistory();
-    setRefreshing(false);
-  };
+	useFocusEffect(
+		React.useCallback(() => {
+			handleFetchHistory();
+		}, [])
+	);
 
-  const renderExercise = ({
-    item,
-    index: exerciseIndex,
-  }: {
-    item: Exercise;
-    index: number;
-  }) => {
-    return (
-      <>
-        <Text style={styles.gridHeader}>{item.exerciseName}</Text>
-
-        {item.sets.map((set, setIndex) => (
-          <View key={setIndex} style={styles.gridRow}>
-            <Text style={styles.gridColumn}>{setIndex + 1}</Text>
-            <Text style={styles.gridColumn}>{set.weight}kg</Text>
-            <Text style={styles.gridColumn}>{set.reps}</Text>
-          </View>
-        ))}
-        <View style={styles.divider} />
-      </>
-    );
-  };
-
-  const renderWorkout = ({ item }: { item: WorkoutRecord }) => {
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.title}>{item.routineName}</Text>
-          <Text style={styles.subtitle}>{item.date.toLocaleString()}</Text>
-          <Text style={styles.subtitle}>{item.description}</Text>
-        </View>
-        <FlatList
-          data={item.exercises}
-          renderItem={renderExercise}
-          style={styles.listContainer}
-        />
-      </View>
-    );
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchHistory();
-    }, [])
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={history}
-        renderItem={renderWorkout}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              You have not completed any workouts
-            </Text>
-          </View>
-        }
-      />
-    </SafeAreaView>
-  );
+	return (
+		<SafeAreaView style={styles.container}>
+			<Calendar
+				onDayPress={day => setSelected(day.dateString)}
+				markedDates={getMarkedDates(history)}
+			/>
+			<FlatList
+				data={filterHistory(selected, history)}
+				renderItem={HistoryWorkoutItem}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+				}
+				ListEmptyComponent={
+					<View style={styles.emptyContainer}>
+						<Text style={styles.emptyText}>
+						You have not completed any workouts
+						</Text>
+					</View>
+				}
+			/>
+		</SafeAreaView>
+	);
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+	container: {
+		flex: 1,
+		backgroundColor: "#fff",
+	},
 
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
+	card: {
+		backgroundColor: "#fff",
+		borderRadius: 15,
+		marginHorizontal: 16,
+		marginBottom: 16,
+		shadowColor: "#000",
+		shadowOffset: {
+		width: 0,
+		height: 2,
+		},
+		shadowOpacity: 0.25,
+		shadowRadius: 3.84,
+		elevation: 5,
+	},
 
-  cardHeader: {
-    backgroundColor: "#f0f0f0",
-    padding: 16,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
+	cardHeader: {
+		backgroundColor: "#f0f0f0",
+		padding: 16,
+		borderTopLeftRadius: 15,
+		borderTopRightRadius: 15,
+		borderBottomWidth: 1,
+		borderBottomColor: "#e0e0e0",
+	},
 
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    paddingBottom: 8,
-  },
+	title: {
+		fontSize: 24,
+		fontWeight: "bold",
+		textAlign: "center",
+		paddingBottom: 8,
+	},
 
-  subtitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginTop: 4,
-  },
+	subtitle: {
+		fontSize: 14,
+		fontWeight: "600",
+		marginTop: 4,
+	},
 
-  listContainer: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-  },
+	listContainer: {
+		backgroundColor: "#fff",
+		padding: 16,
+		borderBottomLeftRadius: 15,
+		borderBottomRightRadius: 15,
+	},
 
-  gridHeader: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
-    marginTop: 12,
-  },
+	gridHeader: {
+		fontSize: 18,
+		fontWeight: "600",
+		marginBottom: 8,
+		marginTop: 12,
+	},
 
-  gridRow: {
-    flexDirection: "row",
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    backgroundColor: "#f8f8f8",
-    borderRadius: 8,
-    marginBottom: 4,
-  },
+	gridRow: {
+		flexDirection: "row",
+		paddingVertical: 8,
+		paddingHorizontal: 4,
+		backgroundColor: "#f8f8f8",
+		borderRadius: 8,
+		marginBottom: 4,
+	},
 
-  gridColumn: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 16,
-  },
+	gridColumn: {
+		flex: 1,
+		textAlign: "center",
+		fontSize: 16,
+	},
 
-  divider: {
-    height: 1,
-    backgroundColor: "#e0e0e0",
-    marginVertical: 12,
-  },
+	divider: {
+		height: 1,
+		backgroundColor: "#e0e0e0",
+		marginVertical: 12,
+	},
 
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    marginTop: 100,
-  },
+	emptyContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 20,
+		marginTop: 100,
+	},
 
-  emptyText: {
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-  },
+	emptyText: {
+		fontSize: 16,
+		textAlign: "center",
+		lineHeight: 24,
+	},
 });
 
 export default HistoryScreen;

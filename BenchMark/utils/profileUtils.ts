@@ -1,24 +1,8 @@
-import { MarkedDates } from "react-native-calendars/src/types";
 import { barDataItem } from "react-native-gifted-charts";
 
-export const toMarkedDates = (dates: Date[]) => {
-    const markedDates: MarkedDates = {};
-    dates.forEach((date: Date) => {
-        const dateString = date.toISOString().split("T")[0];
-        markedDates[dateString] = {
-            marked: true,
-            dotColor: "#4CAF50",
-            activeOpacity: 0.8
-        };
-
-    });
-    return markedDates;
-};
-
-export const toBarData = (dates: Date[]) => {
+export const toBarData = (dates: Date[], today: Date) => {
     const weeklyCount = new Map<string, { count: number, date: Date }>();
 
-    const today = new Date();
     for (let i = 0; i < 7; i++) {
         const dateKey = new Date(today);
         dateKey.setDate(today.getDate() - today.getDay() - (7 * i));

@@ -1,12 +1,17 @@
-import { Alert, SafeAreaView, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { FirebaseError } from "firebase/app";
+import {
+    FlatList,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { ExerciseInfo} from "@/constants/Types";
+import { ExerciseInfo } from "@/constants/Types";
 import { useEffect, useState } from "react";
-import { collection, getDocs, getFirestore, query } from "@react-native-firebase/firestore";
+import { fetchExercises } from "@/utils/firestoreFetchUtils";
 
 const ExercisesScreen = () => {
-    const db = getFirestore();
     const router = useRouter();
     const filterParams = useLocalSearchParams();
     const [allExercises, setAllExercises] = useState<ExerciseInfo[]>([]);
@@ -14,24 +19,10 @@ const ExercisesScreen = () => {
     const [equipment, setEquipment] = useState<String[]>([]);
     const [selected, setSelected] = useState<ExerciseInfo[]>([]);
 
-    const fetchExercises = async () => {
-        try {
-            const querySnapshot = await getDocs(query(collection(db, "exercises")));
-            const exercises = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    exerciseName: data.exerciseName,
-                    target: data.target,
-                    subTarget: data.subTarget,
-                    equipment: data.equipment 
-                }
-            });
-            setAllExercises(exercises);
-            setSelected(exercises);
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch Exercises Failed", err.message);
-        }
+    const loadExercises = async () => {
+        const exercises: ExerciseInfo[] = await fetchExercises();
+        setAllExercises(exercises);
+        setSelected(exercises);
     };
 
     const renderExercise = ({item}: {item: ExerciseInfo}) => {
@@ -54,7 +45,7 @@ const ExercisesScreen = () => {
     };
 
     useEffect(() => {
-        fetchExercises();
+        loadExercises();
     }, []);
 
     useEffect(() => {

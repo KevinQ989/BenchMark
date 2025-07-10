@@ -20,6 +20,14 @@ export interface ExerciseParams {
     sets: string;
 }
 
+export interface UserData {
+    username: string,
+    photoURL: string,
+    workouts: number,
+    duration: number,
+    goal: number
+}
+
 //For uploading and downloading from firestore
 export interface Routine {
     id: string;

@@ -1,61 +1,15 @@
 import { barDataItem } from "react-native-gifted-charts";
 import {
-    toMarkedDates,
     toBarData,
     getMax,
     formatDuration
 } from "@/utils/profileUtils";
 
 describe("profileUtils", () => {
-    describe("toMarkedDates", () => {
-        test("Convert Empty Array", () => {
-            const arr: Date[] = [];
-            expect(toMarkedDates(arr)).toEqual({});
-        });
-
-        test("Convert Single Date", () => {
-            const arr: Date[] = [
-                new Date("2025-06-12T10:00:00Z")
-            ];
-            expect(toMarkedDates(arr)).toEqual({
-                "2025-06-12": {
-                    marked: true,
-                    dotColor: "#4CAF50",
-                    activeOpacity: 0.8
-                }
-            });
-        });
-
-        test("Convert Multiple Dates", () => {
-            const arr: Date[] = [
-                new Date("2025-06-12T10:00:00Z"),
-                new Date("2025-06-19T04:30:10Z"),
-                new Date("2025-06-24T09:10:05Z")
-            ];
-            expect(toMarkedDates(arr)).toEqual({
-                "2025-06-12": {
-                    marked: true,
-                    dotColor: "#4CAF50",
-                    activeOpacity: 0.8
-                },
-                "2025-06-19": {
-                    marked: true,
-                    dotColor: "#4CAF50",
-                    activeOpacity: 0.8
-                },
-                "2025-06-24": {
-                    marked: true,
-                    dotColor: "#4CAF50",
-                    activeOpacity: 0.8
-                }
-            });
-        });
-    });
-
     describe("toBarData", () => {
         test("Convert Empty Array", () => {
             const arr: Date[] = [];
-            expect(toBarData(arr)).toEqual([
+            expect(toBarData(arr, new Date("2025-06-26"))).toEqual([
                 {
                     value: 0,
                     label: "11 May"
@@ -91,7 +45,7 @@ describe("profileUtils", () => {
             const arr: Date[] = [
                 new Date("2025-06-12T10:00:00Z")
             ];
-            expect(toBarData(arr)).toEqual([
+            expect(toBarData(arr, new Date("2025-06-26"))).toEqual([
                 {
                     value: 0,
                     label: "11 May"
@@ -129,7 +83,7 @@ describe("profileUtils", () => {
                 new Date("2025-06-19T04:30:10Z"),
                 new Date("2025-06-20T09:10:05Z")
             ];
-            expect(toBarData(arr)).toEqual([
+            expect(toBarData(arr, new Date("2025-06-26"))).toEqual([
                 {
                     value: 0,
                     label: "11 May"
