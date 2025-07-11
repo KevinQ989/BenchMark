@@ -8,13 +8,16 @@ import {
     getDoc,
     updateDoc,
     increment,
-    arrayUnion
+    arrayUnion,
+    where,
+    query,
+    getDocs
 } from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
 import { FirebaseError } from "firebase/app";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { Exercise } from "@/constants/Types";
+import { Exercise, Friend, FriendRequest } from "@/constants/Types";
 
 const db = getFirestore();
 const router = useRouter();
@@ -245,5 +248,244 @@ export const saveUserData = async (
     } catch (e: any) {
         const err = e as FirebaseError;
         Alert.alert("Save Profile Failed", err.message);
+    }
+};
+
+export const sendFriendRequest = async (
+    targetUid: string,
+    targetUsername: string
+) => {
+    try {
+        const uid = auth().currentUser?.uid;
+        if (!uid) return;
+
+        // Get current user's data
+		const currentUserDoc = await getDoc(doc(db, "users", uid));
+		const currentUserData = currentUserDoc.data();
+
+		// Check if friend request already exists
+		const existingRequestQuery = query(
+			collection(db, "friendRequests"),
+			where("fromUid", "==", uid),
+			where("toUid", "==", targetUid),
+			where("status", "==", "pending")
+		);
+		const existingRequestSnapshot = await getDocs(existingRequestQuery);
+
+		if (!existingRequestSnapshot.empty) {
+			Alert.alert("Error", "Friend request already sent");
+			return;
+		}
+
+		// Send friend request
+		await addDoc(collection(db, "friendRequests"), {
+			fromUid: uid,
+			fromUsername: currentUserData?.username,
+			fromEmail: currentUserData?.email,
+			toUid: targetUid,
+			status: "pending",
+			timestamp: new Date(),
+		});
+
+		Alert.alert("Success", `Friend request sent to ${targetUsername}`);
+        return true;
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        Alert.alert("Send Friend Request Failed", err.message);
+        return false;
+    }
+};
+
+export const acceptFriendRequest = async (
+    request: FriendRequest
+) => {
+    try {
+		const uid = auth().currentUser?.uid;
+		if (!uid) return;
+
+		// Update the friend request status
+		await updateDoc(doc(db, "friendRequests", request.id), {
+			status: "accepted",
+		});
+
+		// Add to friends collection for both users
+		const currentUserDoc = await getDoc(doc(db, "users", uid));
+		const currentUserData = currentUserDoc.data();
+
+		// Add friend to current user's friends list
+		await addDoc(collection(db, "users", uid, "friends"), {
+			uid: request.fromUid,
+			username: request.fromUsername,
+			email: request.fromEmail,
+		});
+
+		// Add current user to friend's friends list
+		await addDoc(collection(db, "users", request.fromUid, "friends"), {
+			uid: uid,
+			username: currentUserData?.username,
+			email: currentUserData?.email,
+		});
+
+		// Create a chat between the two users
+		const chatId = [uid, request.fromUid].sort().join("_");
+		await addDoc(collection(db, "chats"), {
+			id: chatId,
+			participants: [uid, request.fromUid],
+			createdAt: new Date(),
+		});
+
+		Alert.alert(
+			"Success",
+			`You are now friends with ${request.fromUsername}`
+		);
+		return true;
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        Alert.alert("Accept Request Failed", err.message);
+        return false;
+    }
+};
+
+export const rejectFriendRequest = async (
+    request: FriendRequest
+) => {
+    try {
+        // Update the friend request status
+        await updateDoc(doc(db, "friendRequests", request.id), {
+            status: "rejected",
+        });
+
+        Alert.alert(
+            "Success",
+            `Friend request from ${request.fromUsername} rejected`
+        );
+        return true;
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        Alert.alert("Reject Request Failed", err.message);
+        return false;
+    }
+};
+
+export const deleteFriend = async (
+    friend: Friend
+) => {
+    try {
+        const uid = auth().currentUser?.uid;
+        if (!uid) return;
+  
+        // Show confirmation dialog
+        Alert.alert(
+            "Remove Friend",
+            `Are you sure you want to remove ${friend.username} from your friends?`,
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Remove",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            // Remove friend from current user's friends list
+                            await deleteDoc(
+                                doc(db, "users", uid, "friends", friend.id)
+                            );
+            
+                            // Remove current user from friend's friends list
+                            const friendFriendsQuery = query(
+                                collection(db, "users", friend.uid, "friends"),
+                                where("uid", "==", uid)
+                            );
+                            const friendFriendsSnapshot = await getDocs(friendFriendsQuery);
+                            if (!friendFriendsSnapshot.empty) {
+                                await deleteDoc(
+                                    doc(
+                                        db,
+                                        "users",
+                                        friend.uid,
+                                        "friends",
+                                        friendFriendsSnapshot.docs[0].id
+                                    )
+                                );
+                            }
+            
+                            // Delete the chat between the two users
+                            const chatId = [uid, friend.uid].sort().join("_");
+                            await deleteDoc(doc(db, "chats", chatId));
+            
+                            Alert.alert(
+                                "Success",
+                                `${friend.username} has been removed from your friends`
+                            );
+                            return true;
+                        } catch (error) {
+                            const err = error as FirebaseError;
+                            Alert.alert("Remove Friend Failed", err.message);
+                            return false;
+                        }
+                    }
+                }
+            ]
+        );
+    } catch (error) {
+        const err = error as FirebaseError;
+        Alert.alert("Remove Friend Failed", err.message);
+        return false;
+    }
+};
+
+export const addMessage = async (
+    message: string,
+    chatId: string,
+    friendId: string
+) => {
+    try {
+        const uid = auth().currentUser?.uid;
+        if (!uid) return;
+
+        // Get current user's username
+        const currentUserDoc = await getDoc(doc(db, "users", uid));
+        const currentUserData = currentUserDoc.data();
+
+        const messageData = {
+            senderUid: uid,
+            senderUsername: currentUserData?.username || "Unknown",
+            message: message.trim(),
+            timestamp: new Date(),
+        };
+
+        // Check if chat document exists, if not create it
+        const chatDocRef = doc(db, "chats", chatId as string);
+        const chatDoc = await getDoc(chatDocRef);
+
+        if (!chatDoc.exists()) {
+            // Create the chat document
+            await setDoc(chatDocRef, {
+                participants: [uid, friendId as string],
+                createdAt: new Date(),
+                lastMessage: message.trim(),
+                lastMessageTime: new Date(),
+            });
+        }
+
+        // Add message to chat
+        await addDoc(
+            collection(db, "chats", chatId as string, "messages"),
+            messageData
+        );
+
+        // Update chat's last message
+        await updateDoc(chatDocRef, {
+            lastMessage: message.trim(),
+            lastMessageTime: new Date(),
+        });
+
+        return true;
+    } catch (error) {
+        const err = error as FirebaseError;
+        Alert.alert("Send Message Failed", err.message);
+        return false;
     }
 };
