@@ -74,12 +74,20 @@ export const fetchUserData = async (uid: string) => {
     try {
         const docSnap = await getDoc(doc(db, "users", uid));
         const data = docSnap.data();
+
+        let workouts = 0;
+        let duration = 0;
+        let goal = 0;
+        if (data?.metrics?.workouts) workouts = data?.metrics.workouts;
+        if (data?.metrics?.duration) duration = data?.metrics.duration;
+        if (data?.metrics?.goal) goal = data?.metrics.goal;
+
         return {
             username: data?.username,
             photoURL: data?.photoURL,
-            workouts: data?.metrics.workouts ?? 0,
-            duration: data?.metrics.duration ?? 0,
-            goal: data?.metrics.goal ?? 0
+            workouts: workouts,
+            duration: duration,
+            goal: goal
         } as UserData;
     } catch (e: any) {
         const err = e as FirebaseError;
@@ -286,5 +294,32 @@ export const fetchFriends = async () => {
     } catch (e: any) {
         const err = e as FirebaseError;
         Alert.alert("Fetch Friends Failed", err.message);
+    }
+};
+
+export const fetchLeaderboardData = async () => {
+    try {
+        const uid = auth().currentUser?.uid;
+        if (!uid) return;
+        const leaderboardData: UserData[] = [];
+
+        const userData: UserData = await fetchUserData(uid);
+        leaderboardData.push(userData);
+
+        // Get user's friends
+        const friendsQuery = query(
+            collection(db, "users", uid, "friends")
+        );
+        const friendsSnapshot = await getDocs(friendsQuery);
+  
+        for (const friendDoc of friendsSnapshot.docs) {
+            const friendUserData: UserData = await fetchUserData(friendDoc.data().uid);
+            leaderboardData.push(friendUserData);
+        }
+
+        return leaderboardData;
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        Alert.alert("Fetch Friend Metrics Failed", err.message);
     }
 };

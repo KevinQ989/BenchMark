@@ -10,18 +10,22 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import auth from "@react-native-firebase/auth";
-import { Friend, FriendRequest } from "@/constants/Types";
+import { Friend, FriendRequest, UserData } from "@/constants/Types";
 import { FriendListItem } from "@/components/FriendListItem";
 import { useFocusEffect } from "@react-navigation/native";
-import { fetchFriendRequests, fetchFriends } from "@/utils/firestoreFetchUtils";
+import { fetchFriendRequests, fetchFriends, fetchLeaderboardData } from "@/utils/firestoreFetchUtils";
 import { deleteFriend } from "@/utils/firestoreSaveUtils";
+import { Leaderboard } from "@/components/Leaderboard";
 
 const FriendsScreen = () => {
 	const router = useRouter();
 	const [friends, setFriends] = useState<Friend[]>([]);
-	const [pendingRequests, setPendingRequests] = useState(0);
-	const [refreshing, setRefreshing] = useState(false);
+	const [pendingRequests, setPendingRequests] = useState<number>(0);
+	const [refreshing, setRefreshing] = useState<boolean>(false);
+	const [leaderboardData, setLeaderboardData] = useState<UserData[]>([]);
+    const [metric, setMetric] = useState<'Workouts' | 'Duration'>('Duration')
 
+	
 	const handleFetchFriends = async () => {
 		const friendsList: Friend[] = await fetchFriends();
 		if (friendsList) setFriends(friendsList);
@@ -32,9 +36,14 @@ const FriendsScreen = () => {
 		setPendingRequests(requestsList.length ?? 0);
 	};
 
+	const handleFetchLeaderboardData = async () => {
+		const data: UserData[] = await fetchLeaderboardData();
+        setLeaderboardData(data);
+	};
+
 	const onRefresh = async () => {
 		setRefreshing(true);
-		await Promise.all([handleFetchFriends(), handleFetchPendingRequests()]);
+		await Promise.all([handleFetchFriends(), handleFetchPendingRequests(), handleFetchLeaderboardData()]);
 		setRefreshing(false);
 	};
 
@@ -66,11 +75,20 @@ const FriendsScreen = () => {
 		if (success) handleFetchFriends();
 	};
 
+	const toggleMetric = () => {
+		if (metric === "Duration") {
+			setMetric("Workouts");
+		} else {
+			setMetric("Duration");
+		}
+	};
+
 	// Refresh friends list when screen comes into focus
 	useFocusEffect(
 		React.useCallback(() => {
-		handleFetchFriends();
-		handleFetchPendingRequests();
+			handleFetchFriends();
+			handleFetchPendingRequests();
+			handleFetchLeaderboardData();
 		}, [])
 	);
 
@@ -132,6 +150,20 @@ const FriendsScreen = () => {
 					}
 				/>
 			)}
+
+			<View style={styles.header}>
+				<Text style={styles.title}>Leaderboard</Text>
+				<TouchableOpacity
+						style={styles.headerButton}
+						onPress={toggleMetric}
+					>
+						<Text style={styles.headerButtonText}>Toggle Metric</Text>
+					</TouchableOpacity>
+			</View>
+			<Leaderboard
+                data={leaderboardData}
+                metric={metric}
+            />
 		</SafeAreaView>
 	);
 };
