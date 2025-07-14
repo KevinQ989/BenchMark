@@ -1,46 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	FlatList,
 	RefreshControl,
 	SafeAreaView,
 	StyleSheet,
 	Text,
+	TouchableOpacity,
 	View
 } from "react-native";
 import { WorkoutRecord } from "@/constants/Types";
 import { useFocusEffect } from "@react-navigation/native";
-import { Calendar } from "react-native-calendars";
 import { HistoryWorkoutItem } from "@/components/HistoryWorkoutItem";
-import { MarkedDates } from "react-native-calendars/src/types";
 import { fetchHistory } from "@/utils/firestoreFetchUtils";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { ThemedText } from "@/components/ThemedText";
 
 const HistoryScreen = () => {
-	const [selected, setSelected] = useState<string>(new Date().toISOString().slice(0, 10));
+	const router = useRouter();
+	const params = useLocalSearchParams();
+	const historyFlatList = useRef<FlatList<WorkoutRecord>>(null);
+	const date = params.date as string | undefined;
 	const [history, setHistory] = useState<WorkoutRecord[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
 
 	const handleFetchHistory = async () => {
 		const history = await fetchHistory();
-		setHistory(history.sort((x, y) => y.date - x.date));
-	};
-
-	const filterHistory = (date: string, history: WorkoutRecord[]) => {
-		return history.filter((item: WorkoutRecord) => item.date.toISOString().slice(0, 10) === date);
-	};
-
-	const getMarkedDates = (history: WorkoutRecord[]) => {
-		const dates: Date[] = history.map((item: WorkoutRecord) => item.date);
-		const markedDates: MarkedDates = {};
-		dates.forEach((date: Date) => {
-			const dateString = date.toISOString().split("T")[0];
-			markedDates[dateString] = {
-				marked: true,
-				dotColor: "#4CAF50",
-				activeOpacity: 0.8
-			};
-	
-		});
-		return markedDates;
+		setHistory(history.sort((x, y) => y.date.getTime() - x.date.getTime()));
 	};
 
 	const onRefresh = async () => {
@@ -55,15 +41,39 @@ const HistoryScreen = () => {
 		}, [])
 	);
 
+	useEffect(() => {
+		if (date && history.length > 0 && historyFlatList.current) {
+			const index = history.findIndex((item: WorkoutRecord) => item.date.toISOString().slice(0, 10) === date)
+			if (index !== -1) {
+				historyFlatList.current.scrollToIndex({
+					index: index,
+					animated: true,
+					viewPosition: 0
+				});
+			}
+		}
+	}, [date, history]);
+
 	return (
 		<SafeAreaView style={styles.container}>
-			<Calendar
-				onDayPress={day => setSelected(day.dateString)}
-				markedDates={getMarkedDates(history)}
-			/>
+			<View style={styles.headerContainer}>
+				<ThemedText type="title">History</ThemedText>
+				<TouchableOpacity
+					onPress={() => router.push({
+						pathname: '/(tabs)/history/calendar',
+						params: {
+							history: JSON.stringify(history)
+						}
+					})}
+				>
+					<MaterialIcons size={32} name="calendar-month" color={"mediumblue"} />
+				</TouchableOpacity>
+			</View>
 			<FlatList
-				data={filterHistory(selected, history)}
+				data={history}
 				renderItem={HistoryWorkoutItem}
+				keyExtractor={(item) => item.id}
+				ref={historyFlatList}
 				refreshControl={
 					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
 				}
@@ -74,6 +84,11 @@ const HistoryScreen = () => {
 						</Text>
 					</View>
 				}
+				onScrollToIndexFailed={() => historyFlatList.current.scrollToIndex({
+					index: 0,
+					animated: true,
+					viewPosition: 0
+				})}
 			/>
 		</SafeAreaView>
 	);
@@ -83,6 +98,12 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: "#fff",
+	},
+
+	headerContainer: {
+		padding: 10,
+		flexDirection: "row",
+		justifyContent: "space-between"
 	},
 
 	card: {
