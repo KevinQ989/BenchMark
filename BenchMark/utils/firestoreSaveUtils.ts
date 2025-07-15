@@ -88,12 +88,12 @@ export const saveRoutine = async (
 		const updatedExercises = exercises.map((exercise, exerciseIndex) => ({
 			...exercise,
 			sets: exercise.sets.map((set, setIndex) => {
-			const key = `${exerciseIndex}-${setIndex}`;
-			const inputValue = inputs[key] || {};
-			return {
-				weight: inputValue.weight ? Number(inputValue.weight) : set.weight,
-				reps: inputValue.reps ? Number(inputValue.reps) : set.reps,
-			};
+                const key = `${exerciseIndex}-${setIndex}`;
+                const inputValue = inputs[key] || {};
+                return {
+                    weight: inputValue.weight ? Number(inputValue.weight) : set.weight,
+                    reps: inputValue.reps ? Number(inputValue.reps) : set.reps,
+                };
 			}),
 		}));
 
@@ -109,6 +109,41 @@ export const saveRoutine = async (
     } catch (e: any) {
         const err = e as FirebaseError;
         alert("Save Routine Failed: " + err.message);
+    }
+};
+
+export const shareRoutine = async (
+    routineName: string,
+    description: string,
+    exercises: Exercise[],
+    friendIds: string[]
+) => {
+    try {
+		const updatedExercises = exercises.map((exercise, _exerciseIndex) => ({
+			...exercise,
+			sets: exercise.sets.map((set, _setIndex) => {
+                return {
+                    weight: set.weight,
+                    reps: set.reps,
+                };
+			}),
+		}));
+
+        friendIds.forEach(async (uid: string) => {
+            await addDoc(
+                collection(db, "users", uid, "sharedRoutines"),
+                {
+                    routineName: routineName,
+                    description: description,
+                    exercises: updatedExercises,
+                }
+            );
+        })
+		return true;
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        alert("Share Routine Failed: " + err.message);
+        return false;
     }
 };
 

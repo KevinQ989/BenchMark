@@ -12,7 +12,7 @@ import { ThemedText } from "@/components/ThemedText";
 import React from "react";
 import { Exercise, Routine } from "@/constants/Types";
 import { useFocusEffect } from "@react-navigation/native";
-import { fetchRoutines } from "@/utils/firestoreFetchUtils";
+import { fetchRoutines, fetchSharedRoutines } from "@/utils/firestoreFetchUtils";
 import { addRoutine } from "@/utils/firestoreSaveUtils";
 
 const HomeScreen = () => {
@@ -20,14 +20,20 @@ const HomeScreen = () => {
 	const [myRoutines, setMyRoutines] = useState<Routine[]>([]);
 	const [sharedRoutines, setSharedRoutines] = useState<Routine[]>([]);
 
-	const loadRoutines = async () => {
-		const routines: Routine[] = await fetchRoutines();
-		setMyRoutines(routines);
+	const handleFetchRoutines = async () => {
+		const routines: Routine[] | undefined = await fetchRoutines();
+		setMyRoutines(routines ?? []);
+	};
+
+	const handleFetchSharedRoutines = async () => {
+		const sharedRoutines: Routine[] | undefined = await fetchSharedRoutines();
+		setSharedRoutines(sharedRoutines ?? []);
 	};
 
 	useFocusEffect(
 		React.useCallback(() => {
-			loadRoutines();
+			handleFetchRoutines();
+			handleFetchSharedRoutines();
 		}, [])
 	);
 
@@ -56,10 +62,10 @@ const HomeScreen = () => {
 				}
 			>
 				<ThemedText type="subtitle" numberOfLines={1} ellipsizeMode="tail">
-				{item.routineName}
+					{item.routineName}
 				</ThemedText>
 				<ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">
-				{item.description}
+					{item.description}
 				</ThemedText>
 				<FlatList data={item.exercises} renderItem={renderExercise} />
 			</TouchableOpacity>

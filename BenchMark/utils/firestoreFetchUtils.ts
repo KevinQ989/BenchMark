@@ -70,6 +70,43 @@ export const fetchRoutines = async () => {
     }
 };
 
+export const fetchSharedRoutines = async () => {
+    try {
+        const uid = auth().currentUser?.uid;
+        if (!uid) return;
+
+        const querySnapshot = await getDocs(
+            query(collection(db, "users", uid, "sharedRoutines"))
+        );
+        const routines = querySnapshot.docs.map((doc) => {
+            const data = doc.data();
+            const exercises = data.exercises.map((exercise: any) => {
+                const sets: Set[] = exercise.sets.map((set: any, setIndex: number) => ({
+                    setNum: setIndex + 1,
+                    weight: set.weight,
+                    reps: set.reps,
+                }));
+
+                return {
+                    exerciseName: exercise.exerciseName,
+                    sets: sets,
+                } as Exercise;
+            });
+
+            return {
+                id: doc.id,
+                routineName: data.routineName,
+                description: data.description,
+                exercises: exercises,
+            } as Routine;
+        });
+        return routines;
+    } catch (e: any) {
+        const err = e as FirebaseError;
+        Alert.alert("Fetch Shared Routines Failed", err.message);
+    }
+};
+
 export const fetchUserData = async (uid: string) => {
     try {
         const docSnap = await getDoc(doc(db, "users", uid));
