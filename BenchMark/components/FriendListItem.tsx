@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Image } from "react-native";
 import { Friend } from "@/constants/Types";
 
 interface FriendListItemProps {
@@ -41,11 +41,15 @@ export const FriendListItem: React.FC<FriendListItemProps> = ({
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.contentContainer} onPress={onPress}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {friend.username.charAt(0).toUpperCase()}
-          </Text>
-        </View>
+        {friend.photoURL ? (
+          <Image source={{ uri: friend.photoURL }} style={styles.avatarImg} />
+        ) : (
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {friend.username.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
         <View style={styles.content}>
           <Text style={styles.username}>{friend.username}</Text>
           {friend.lastMessage && (
@@ -118,6 +122,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  avatarImg: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    marginRight: 10,
+    backgroundColor: '#eee',
   },
   content: {
     flex: 1,

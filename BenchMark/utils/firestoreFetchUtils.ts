@@ -283,7 +283,7 @@ export const fetchFriendRequests = async () => {
 export const fetchFriends = async () => {
     try {
         const uid = auth().currentUser?.uid;
-        if (!uid) return;
+        if (!uid) return [];
   
         // Get user's friends
         const friendsQuery = query(
@@ -308,6 +308,17 @@ export const fetchFriends = async () => {
                 lastMessage = chatData?.lastMessage || "";
                 lastMessageTime = chatData?.lastMessageTime?.toDate();
             }
+
+            // Fetch friend's profile for photoURL
+            let photoURL = undefined;
+            try {
+                const userDoc = await getDoc(doc(db, "users", friendData.uid));
+                if (userDoc.exists()) {
+                    photoURL = userDoc.data().photoURL;
+                }
+            } catch (e) {
+                photoURL = undefined;
+            }
     
             friendsList.push({
                 id: friendDoc.id,
@@ -316,7 +327,8 @@ export const fetchFriends = async () => {
                 email: friendData.email,
                 lastMessage,
                 lastMessageTime,
-            });
+                photoURL,
+            } as Friend);
         }
   
         // Sort friends by last message time (most recent first)
@@ -324,13 +336,14 @@ export const fetchFriends = async () => {
             if (!a.lastMessageTime && !b.lastMessageTime) return 0;
             if (!a.lastMessageTime) return 1;
             if (!b.lastMessageTime) return -1;
-            return b.lastMessageTime.getTime() - a.lastMessageTime.getTime();
+            return (b.lastMessageTime?.getTime() ?? 0) - (a.lastMessageTime?.getTime() ?? 0);
         });
   
         return friendsList;
     } catch (e: any) {
         const err = e as FirebaseError;
         Alert.alert("Fetch Friends Failed", err.message);
+        return [];
     }
 };
 

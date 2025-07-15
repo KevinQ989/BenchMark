@@ -85,6 +85,7 @@ export interface Friend {
     email: string;
     lastMessage?: string;
     lastMessageTime?: Date;
+    photoURL?: string;
 }
 
 export interface FriendRequest {
