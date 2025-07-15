@@ -30,7 +30,7 @@ const LeaderboardItem = ({
             {metric == 'Duration' ? (
                 <Text style={styles.metricText}>{formatDuration(item.duration)}</Text>
             ) : (
-                <Text style={styles.metricText}>{item.workouts}</Text>
+                <Text style={styles.metricText}>{item.workouts} Workouts</Text>
             )}
         </View>
     )

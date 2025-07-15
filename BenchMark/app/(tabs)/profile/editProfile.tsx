@@ -28,9 +28,11 @@ const EditProfileScreen = () => {
     const handleFetchUserData = async () => {
         const uid = auth().currentUser?.uid;
         if (!uid) return;
-        const userData: UserData = await fetchUserData(uid);
-        setUsername(userData.username);
-        setPhotoURL(userData.photoURL);
+        const userData: UserData | undefined = await fetchUserData(uid);
+        if (userData) {
+            setUsername(userData.username);
+            setPhotoURL(userData.photoURL);
+        }
     };
 
     const setProfilePhoto = async () => {
@@ -116,14 +118,16 @@ const EditProfileScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        margin: 10,
         backgroundColor: "#FFF"
     },
   
     titleContainer: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
+      marginHorizontal: 16,
+      marginTop: 24,
+      marginBottom: 24
     },
 
     imageContainer: {
@@ -152,7 +156,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingVertical: 12,
         borderBottomWidth: 0.5,
-        borderBottomColor: "#E0E0E0"
+        borderBottomColor: "#E0E0E0",
+        marginHorizontal: 16,
+        marginTop: 24
     },
 
     fieldLabel: {

@@ -27,18 +27,18 @@ const FriendsScreen = () => {
 
 	
 	const handleFetchFriends = async () => {
-		const friendsList: Friend[] = await fetchFriends();
+		const friendsList: Friend[] | undefined = await fetchFriends();
 		if (friendsList) setFriends(friendsList);
 	};
 
 	const handleFetchPendingRequests = async () => {
-		const requestsList: FriendRequest[] = await fetchFriendRequests();
-		setPendingRequests(requestsList.length ?? 0);
+		const requestsList: FriendRequest[] | undefined = await fetchFriendRequests();
+		setPendingRequests(requestsList?.length ?? 0);
 	};
 
 	const handleFetchLeaderboardData = async () => {
-		const data: UserData[] = await fetchLeaderboardData();
-        setLeaderboardData(data);
+		const data: UserData[] | undefined = await fetchLeaderboardData();
+        if (data) setLeaderboardData(data);
 	};
 
 	const onRefresh = async () => {
@@ -129,41 +129,49 @@ const FriendsScreen = () => {
 				</View>
 			</View>
 
-			{friends.length === 0 ? (
-				<View style={styles.emptyContainer}>
-					<Text style={styles.emptyText}>You have not added any friends</Text>
-				</View>
-			) : (
-				<FlatList
-					data={friends}
-					renderItem={({ item }) => (
-						<FriendListItem
-							friend={item}
-							onPress={() => handleFriendPress(item)}
-							onDelete={() => handleDeleteFriend(item)}
+			<View style={styles.contentContainer}>
+				{/* Friends Section */}
+				<View style={[styles.sectionContainer, styles.friendsSection]}>
+					{friends.length === 0 ? (
+						<View style={styles.emptyContainer}>
+							<Text style={styles.emptyText}>You have not added any friends</Text>
+						</View>
+					) : (
+						<FlatList
+							data={friends}
+							renderItem={({ item }) => (
+								<FriendListItem
+									friend={item}
+									onPress={() => handleFriendPress(item)}
+									onDelete={() => handleDeleteFriend(item)}
+								/>
+							)}
+							keyExtractor={(item) => item.id}
+							style={styles.friendsList}
+							refreshControl={
+								<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+							}
 						/>
 					)}
-					keyExtractor={(item) => item.id}
-					style={styles.friendsList}
-					refreshControl={
-						<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-					}
-				/>
-			)}
+				</View>
 
-			<View style={styles.header}>
-				<Text style={styles.title}>Leaderboard</Text>
-				<TouchableOpacity
-						style={styles.headerButton}
-						onPress={toggleMetric}
-					>
-						<Text style={styles.headerButtonText}>Toggle Metric</Text>
-					</TouchableOpacity>
+				{/* Leaderboard Section */}
+				<View style={[styles.sectionContainer, styles.leaderboardSection]}>
+					<View style={styles.sectionHeader}>
+						<Text style={styles.sectionTitle}>Leaderboard</Text>
+						<TouchableOpacity
+							style={styles.headerButton}
+							onPress={toggleMetric}
+						>
+							<Text style={styles.headerButtonText}>Toggle Metric</Text>
+						</TouchableOpacity>
+					</View>
+					<Leaderboard
+						data={leaderboardData}
+						metric={metric}
+					/>
+				</View>
 			</View>
-			<Leaderboard
-                data={leaderboardData}
-                metric={metric}
-            />
 		</SafeAreaView>
 	);
 };
@@ -206,6 +214,39 @@ const styles = StyleSheet.create({
 		fontWeight: "600"
 	},
 
+	contentContainer: {
+		flex: 1,
+		flexDirection: "column"
+	},
+
+	sectionContainer: {
+		flex: 1,
+		backgroundColor: "white",
+		marginVertical: 4
+	},
+
+	friendsSection: {
+		flex: 0.4
+	},
+
+	leaderboardSection: {
+		flex: 0.6
+	},
+
+	sectionHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		padding: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: "#e0e0e0"
+	},
+
+	sectionTitle: {
+		fontSize: 20,
+		fontWeight: "600"
+	},
+
 	emptyContainer: {
 		flex: 1,
 		justifyContent: "center",
@@ -213,7 +254,7 @@ const styles = StyleSheet.create({
 	},
 
 	emptyText: {
-		fontSize: 24,
+		fontSize: 18,
 		fontWeight: "600",
 		textAlign: "center",
 		color: "#666"

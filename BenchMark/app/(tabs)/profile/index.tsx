@@ -38,32 +38,36 @@ const ProfileScreen = () => {
         setLoading(true);
         const uid = auth().currentUser?.uid;
         if (!uid) return;
-        const userData: UserData = await fetchUserData(uid);
-        setUsername(userData.username);
-        setPhotoURL(userData.photoURL ?? null);
-        setGoal(userData.goal);
-        setMetrics([
-            {
-                metric: "Total Workouts",
-                value: userData.workouts.toLocaleString()
-            },
-            {
-                metric: "Total Workout\nDuration",
-                value: formatDuration(userData.duration)
-            },
-            {
-                metric: "Average Workout\nDuration",
-                value: formatDuration(userData.workouts != 0 ? userData.duration / userData.workouts : 0)
-            }
-        ])
+        const userData: UserData | undefined = await fetchUserData(uid);
+        if (userData) {
+            setUsername(userData.username);
+            setPhotoURL(userData.photoURL ?? null);
+            setGoal(userData.goal);
+            setMetrics([
+                {
+                    metric: "Total Workouts",
+                    value: userData.workouts.toLocaleString()
+                },
+                {
+                    metric: "Total Workout\nDuration",
+                    value: formatDuration(userData.duration)
+                },
+                {
+                    metric: "Average Workout\nDuration",
+                    value: formatDuration(userData.workouts != 0 ? userData.duration / userData.workouts : 0)
+                }
+            ])
+        }
         setLoading(false);
 
-        const repmaxs: RepMax[] = await fetchRecords();
-        setRecords(repmaxs);
+        const repmaxs: RepMax[] | undefined = await fetchRecords();
+        if (repmaxs) setRecords(repmaxs);
 
         const history = await fetchHistory();
-        const dates: Date[] = history.map(item => item.date);
-        setWorkoutDates(dates);
+        if (history) {
+            const dates: Date[] = history.map(item => item.date);
+            setWorkoutDates(dates);
+        }
     };
 
     const renderMetric = ({item} : {item: Metric}) => {
@@ -212,14 +216,14 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        margin: 10,
         backgroundColor: "#FFF"
     },
   
     titleContainer: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
+      paddingHorizontal: 16
     },
 
     profilePhoto: {

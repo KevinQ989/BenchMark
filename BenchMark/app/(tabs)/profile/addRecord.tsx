@@ -21,9 +21,11 @@ const AddRecordScreen = () => {
     const [date, setDate] = useState<Date>(new Date());
 
     const fetchExerciseCatalog = async () => {
-        const exercises: ExerciseInfo[] = await fetchExercises();
-        const exerciseCatalog: string[] = exercises.map((item: ExerciseInfo) => item.exerciseName);
-        setCatalog(exerciseCatalog);
+        const exercises: ExerciseInfo[] | undefined = await fetchExercises();
+        if (exercises) {
+            const exerciseCatalog: string[] = exercises.map((item: ExerciseInfo) => item.exerciseName);
+            setCatalog(exerciseCatalog);
+        }
     };
 
     const onDateChange = (event: any, selectedDate?: Date) => {
@@ -98,7 +100,6 @@ const AddRecordScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        margin: 10,
         backgroundColor: "#FFF"
     },
 
