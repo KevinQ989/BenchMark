@@ -37,7 +37,7 @@ const RoutinePreviewScreen = () => {
 					renderItem={renderExercise}
 				/>
 				<TouchableOpacity
-					style={styles.addButton}
+					style={styles.button}
 					onPress={() =>
 						router.replace({
 						pathname: "/home/routine",
@@ -51,10 +51,10 @@ const RoutinePreviewScreen = () => {
 						})
 					}
 				>
-					<Text style={styles.addText}>Start Workout</Text>
+					<Text style={styles.buttonText}>Start Workout</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
-					style={styles.editButton}
+					style={styles.button}
 					onPress={() =>
 						router.replace({
 							pathname: "/home/routine",
@@ -68,10 +68,24 @@ const RoutinePreviewScreen = () => {
 						})
 					}
 				>
-					<Text style={styles.editText}>Edit Routine</Text>
+					<Text style={styles.buttonText}>Edit Routine</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.deleteButton} onPress={handleDeleteRoutine}>
-					<Text style={styles.deleteText}>Delete Routine</Text>
+				<TouchableOpacity
+					style={styles.button}
+					onPress={() =>
+						router.replace({
+							pathname: "/home/shareRoutine",
+							params: {
+								routineName: params.routineName,
+								exercises: params.exercises
+							},
+						})
+					}
+				>
+					<Text style={styles.buttonText}>Share Routine</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.button} onPress={handleDeleteRoutine}>
+					<Text style={styles.buttonText}>Delete Routine</Text>
 				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
@@ -113,7 +127,7 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 	},
 
-	addButton: {
+	button: {
 		backgroundColor: "#4a90e2",
 		padding: 10,
 		borderRadius: 5,
@@ -121,39 +135,11 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 
-	addText: {
+	buttonText: {
 		color: "#fff",
 		fontSize: 16,
 		fontWeight: "bold",
-	},
-
-	editButton: {
-		backgroundColor: "#4a90e2",
-		padding: 10,
-		borderRadius: 5,
-		marginTop: 10,
-		alignItems: "center",
-	},
-
-	editText: {
-		color: "#fff",
-		fontSize: 16,
-		fontWeight: "bold",
-	},
-
-	deleteButton: {
-		backgroundColor: "#4a90e2",
-		padding: 10,
-		borderRadius: 5,
-		marginTop: 10,
-		alignItems: "center",
-	},
-
-	deleteText: {
-		color: "#fff",
-		fontSize: 16,
-		fontWeight: "bold",
-	},
+	}
 });
 
 export default RoutinePreviewScreen;

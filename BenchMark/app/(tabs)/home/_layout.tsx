@@ -12,6 +12,13 @@ const HomeLayout = () => {
           presentation: "modal",
         }}
       />
+      <Stack.Screen
+        name="shareRoutine"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
       <Stack.Screen name="routine" options={{ headerShown: false }} />
     </Stack>
   );

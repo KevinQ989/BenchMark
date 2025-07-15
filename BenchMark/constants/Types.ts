@@ -111,3 +111,9 @@ export interface Chat {
     lastMessage?: string;
     lastMessageTime?: Date;
 }
+
+export interface SearchResult {
+    uid: string;
+    username: string;
+    email: string;
+}

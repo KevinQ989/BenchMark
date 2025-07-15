@@ -13,7 +13,6 @@ import {
 import auth from "@react-native-firebase/auth";
 import { useCallback, useState } from "react";
 import { Metric, RepMax, UserData } from "@/constants/Types";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useFocusEffect, useRouter } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
 import {
@@ -23,6 +22,7 @@ import {
 } from "@/utils/profileUtils";
 import { fetchHistory, fetchRecords, fetchUserData } from "@/utils/firestoreFetchUtils";
 import { saveGoal } from "@/utils/firestoreSaveUtils";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const ProfileScreen = () => {
     const router = useRouter();
@@ -119,11 +119,11 @@ const ProfileScreen = () => {
                             style={styles.profilePhoto}
                         />
                     ) : (
-                        <IconSymbol size={28} name="person.fill" color={"#430589"} />
+                        <MaterialIcons size={28} name="person" color={"#430589"} />
                     )}
                     <Text style={styles.title}>{username}</Text>
                     <TouchableOpacity onPress={() => router.push("/(tabs)/profile/editProfile")}>
-                        <IconSymbol size={28} name="gearshape.fill" color={"#430954"} />
+                        <MaterialIcons size={28} name="settings" color={"#430589"} />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.divider} />

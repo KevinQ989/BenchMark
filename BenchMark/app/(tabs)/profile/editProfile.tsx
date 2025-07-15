@@ -13,7 +13,7 @@ import { FirebaseError } from "firebase/app";
 import storage from "@react-native-firebase/storage";
 import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { TextInput } from "react-native-gesture-handler";
 import { UserData } from "@/constants/Types";
 import { fetchUserData } from "@/utils/firestoreFetchUtils";
@@ -96,7 +96,7 @@ const EditProfileScreen = () => {
                         />
                     ) : (
                         <View style={styles.placeholderPhoto}>
-                            <IconSymbol size={60} name="person.fill" color={"#999999"} />
+                            <MaterialIcons size={60} name="person" color={"#999999"} />
                         </View>
                     )}
                 <Button title="Edit Profile Photo" onPress={setProfilePhoto} />
