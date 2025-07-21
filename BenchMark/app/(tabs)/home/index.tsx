@@ -89,6 +89,8 @@ const HomeScreen = () => {
 	};
 
 	const renderRoutine = ({ item }: { item: Routine }) => {
+		const exercisesToShow = item.exercises.slice(0, 3);
+		const hasMore = item.exercises.length > 3;
 		return (
 			<TouchableOpacity
 				style={styles.routineCard}
@@ -110,7 +112,14 @@ const HomeScreen = () => {
 				<ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">
 					{item.description}
 				</ThemedText>
-				<FlatList data={item.exercises} renderItem={renderExercise} />
+				{exercisesToShow.map((ex, idx) => (
+					<ThemedText key={idx} type="default" numberOfLines={1} ellipsizeMode="tail">
+						{ex.sets.length} x {ex.exerciseName}
+					</ThemedText>
+				))}
+				{hasMore && (
+					<ThemedText type="default" numberOfLines={1} ellipsizeMode="tail">...</ThemedText>
+				)}
 			</TouchableOpacity>
 		);
 	};
