@@ -19,11 +19,27 @@ export async function uploadPhotoAsync(uri: string, userId: string): Promise<str
   const fileName = `${userId}_${Date.now()}`;
   const storageRef = storage().ref(`feedPhotos/${fileName}`);
 
-  // Upload the file
-  await storageRef.putFile(uri);
+  // Log the uri for debugging
+  console.log('uploadPhotoAsync: uploading file', uri, 'for user', userId);
+
+  try {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    await storageRef.put(blob);
+  } catch (error) {
+    console.error('uploadPhotoAsync: failed to upload file as blob', uri, error);
+    throw error;
+  }
 
   // Get the download URL
-  return await storageRef.getDownloadURL();
+  try {
+    const url = await storageRef.getDownloadURL();
+    console.log('uploadPhotoAsync: got download URL', url);
+    return url;
+  } catch (error) {
+    console.error('uploadPhotoAsync: failed to get download URL', error);
+    throw error;
+  }
 }
 
 export async function createPost({
@@ -43,7 +59,13 @@ export async function createPost({
   routineId?: string;
   routineName?: string;
 }): Promise<void> {
-  const photoUrl = await uploadPhotoAsync(photoUri, userId);
+  let photoUrl;
+  try {
+    photoUrl = await uploadPhotoAsync(photoUri, userId);
+  } catch (error) {
+    console.error('createPost: failed to upload photo', photoUri, error);
+    throw error;
+  }
   // Fetch user profile from Firestore
   let finalUserName = userName;
   let finalUserAvatar = userAvatar;
@@ -68,7 +90,12 @@ export async function createPost({
     timestamp: firestore.FieldValue.serverTimestamp(),
     ...(finalUserAvatar !== undefined ? { userAvatar: finalUserAvatar ?? null } : {}),
   };
-  await firestore().collection('posts').add(post);
+  try {
+    await firestore().collection('posts').add(post);
+  } catch (error) {
+    console.error('createPost: failed to add post to Firestore', post, error);
+    throw error;
+  }
 }
 
 export async function fetchFeedPosts(userId: string, friendsIds: string[]): Promise<FeedPost[]> {
