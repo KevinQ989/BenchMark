@@ -6,7 +6,7 @@ BenchMark aims to be an all-in-one AI-powered gym companion that makes going to 
 
 ## Motivation
 
-As frequent gym-goers, we have tried numerous apps designed to assist with workouts. However, we found that many lacked several valuable features, or offered different features that would have been more convenient if combined into a single app. This led us to identify an opportunity to develop a comprehensive platform that not only helps users plan and track their workouts, but also integrates personalized recommendations, progress monitoring, community support, and gamification.
+As frequent gym-goers, we have tried numerous apps designed to assist with workouts. However, we found that many lacked several valuable features, or offered different features that would have been more convenient if combined into a single app. This led us to identify an opportunity to develop a comprehensive platform that not only helps users plan and track their workouts, but also integrates personalized recommendations, progress monitoring, and community features.
 
 ## Features
 
@@ -42,6 +42,7 @@ To use the AI workout recommendations feature, you'll need to set up a Google Ge
   GOOGLE_GEMINI_API_KEY=your_api_key_here
   ```
 - Replace `your_api_key_here` with your actual Google Gemini API key
+- If you forgot to do this step before running the app, make sure to restart the server after adding the .env file!
 
 5. Run the application:
    ```sh

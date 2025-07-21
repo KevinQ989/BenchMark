@@ -20,6 +20,14 @@ export interface ExerciseParams {
     sets: string;
 }
 
+export interface UserData {
+    username: string,
+    photoURL: string,
+    workouts: number,
+    duration: number,
+    goal: number
+}
+
 //For uploading and downloading from firestore
 export interface Routine {
     id: string;
@@ -77,6 +85,7 @@ export interface Friend {
     email: string;
     lastMessage?: string;
     lastMessageTime?: Date;
+    photoURL?: string;
 }
 
 export interface FriendRequest {
@@ -102,4 +111,10 @@ export interface Chat {
     participants: string[];
     lastMessage?: string;
     lastMessageTime?: Date;
+}
+
+export interface SearchResult {
+    uid: string;
+    username: string;
+    email: string;
 }

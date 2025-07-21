@@ -3,10 +3,10 @@ import React from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const TabLayout = () => {
   const colorScheme = useColorScheme();
@@ -32,7 +32,7 @@ const TabLayout = () => {
         options={{
           title: "Home",
           tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <MaterialIcons size={28} name="home" color={color} />
           ),
         }}
       />
@@ -41,7 +41,7 @@ const TabLayout = () => {
         options={{
           title: "Exercises",
           tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="dumbbell.fill" color={color} />
+            <MaterialIcons size={28} name="fitness-center" color={color} />
           ),
         }}
       />
@@ -50,7 +50,7 @@ const TabLayout = () => {
         options={{
           title: "History",
           tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="clock.fill" color={color} />
+            <MaterialIcons size={28} name="history" color={color} />
           ),
         }}
       />
@@ -59,7 +59,7 @@ const TabLayout = () => {
         options={{
           title: "Friends",
           tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <MaterialIcons size={28} name="groups" color={color} />
           ),
         }}
       />
@@ -68,7 +68,7 @@ const TabLayout = () => {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <MaterialIcons size={28} name="person" color={color} />
           ),
         }}
       />

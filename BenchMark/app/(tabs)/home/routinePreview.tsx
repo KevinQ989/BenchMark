@@ -1,183 +1,228 @@
 import {
-  Alert,
-  SafeAreaView,
-  View,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
+	FlatList,
+	SafeAreaView,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { RoutineParams } from "@/components/Types";
-import { Exercise } from "@/components/Types";
-import { doc, deleteDoc, getFirestore } from "@react-native-firebase/firestore";
-import auth from "@react-native-firebase/auth";
-import { FirebaseError } from "firebase/app";
+import React, { useEffect, useState } from "react";
+import { RoutineParams, Exercise } from "@/constants/Types";
+import { deleteRoutine } from "@/utils/firestoreSaveUtils";
+import { getFirestore, doc, getDoc, addDoc, collection } from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 const RoutinePreviewScreen = () => {
-  const router = useRouter();
-  const params = useLocalSearchParams<RoutineParams>();
+	const router = useRouter();
+	const params = useLocalSearchParams();
 
-  const renderExercise = ({ item }: { item: Exercise }) => {
-    return (
-      <Text>
-        {item.sets.length} x {item.exerciseName}
-      </Text>
-    );
-  };
+	const [routine, setRoutine] = useState<any>(null);
+	const [loading, setLoading] = useState(false);
+	const [adding, setAdding] = useState(false);
 
-  const deleteRoutine = async () => {
-    try {
-      const db = getFirestore();
-      const uid = auth().currentUser?.uid;
+	const currentUser = auth().currentUser;
+	const ownerId = Array.isArray(params.ownerId) ? params.ownerId[0] : params.ownerId;
+	const routineId = Array.isArray(params.id) ? params.id[0] : params.id;
+	const isReadOnly = ownerId && currentUser && ownerId !== currentUser.uid;
 
-      if (!uid) {
-        Alert.alert("Error", "You must be logged in to delete a routine");
-        return;
-      }
+	useEffect(() => {
+		const fetchRoutine = async () => {
+			if (routineId && ownerId) {
+				setLoading(true);
+				try {
+					const db = getFirestore();
+					const docRef = doc(db, 'users', ownerId, 'myRoutines', routineId);
+					const docSnap = await getDoc(docRef);
+					if (docSnap.exists()) {
+						setRoutine({ id: docSnap.id, ...docSnap.data() });
+					} else {
+						setRoutine(null);
+					}
+				} catch (e) {
+					setRoutine(null);
+				}
+				setLoading(false);
+			}
+		};
+		fetchRoutine();
+	}, [routineId, ownerId]);
 
-      if (!params.id) {
-        Alert.alert("Error", "Routine ID is missing");
-        return;
-      }
+	let exercises: Exercise[] = [];
+	let routineName = params.routineName;
+	let description = params.description;
 
-      await deleteDoc(doc(db, "users", uid, "myRoutines", params.id));
-      Alert.alert("Success", "Routine deleted successfully");
-      router.replace("/(tabs)/home");
-    } catch (e) {
-      const err = e as FirebaseError;
-      Alert.alert("Delete Routine Failed", err.message);
-    }
-  };
+	if (routine) {
+		exercises = routine.exercises || [];
+		routineName = routine.routineName;
+		description = routine.description;
+	} else {
+		try {
+			exercises = typeof params.exercises === 'string' ? JSON.parse(params.exercises) : params.exercises;
+		} catch (e) {
+			exercises = [];
+		}
+	}
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>{params.routineName}</Text>
-        <Text style={styles.description}>{params.description}</Text>
-        <FlatList
-          data={JSON.parse(params.exercises)}
-          renderItem={renderExercise}
-        />
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() =>
-            router.replace({
-              pathname: "/home/routine",
-              params: {
-                id: params.id,
-                routineName: params.routineName,
-                description: params.description,
-                exercises: params.exercises,
-                started: "true",
-              },
-            })
-          }
-        >
-          <Text style={styles.addText}>Start Workout</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() =>
-            router.replace({
-              pathname: "/home/routine",
-              params: {
-                id: params.id,
-                routineName: params.routineName,
-                description: params.description,
-                exercises: params.exercises,
-                started: "false",
-              },
-            })
-          }
-        >
-          <Text style={styles.editText}>Edit Routine</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={deleteRoutine}>
-          <Text style={styles.deleteText}>Delete Routine</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
+	const renderExercise = ({ item }: { item: Exercise }) => {
+		return (
+		<Text>
+			{item.sets.length} x {item.exerciseName}
+		</Text>
+		);
+	};
+
+	const handleDeleteRoutine = async () => {
+		await deleteRoutine(params.id);
+	};
+
+	const handleAddToMyRoutines = async () => {
+		if (!currentUser) return;
+		setAdding(true);
+		try {
+			const db = getFirestore();
+			await addDoc(collection(db, 'users', currentUser.uid, 'myRoutines'), {
+				routineName,
+				description,
+				exercises,
+			});
+			alert('Routine added to your routines!');
+			router.back();
+		} catch (e) {
+			alert('Failed to add routine.');
+		}
+		setAdding(false);
+	};
+
+	return (
+		<SafeAreaView style={styles.container}>
+			<View style={styles.card}>
+				<Text style={styles.title}>{routineName}</Text>
+				<Text style={styles.description}>{description}</Text>
+				{loading ? (
+					<Text>Loading...</Text>
+				) : (
+					<FlatList
+						data={exercises}
+						renderItem={renderExercise}
+					/>
+				)}
+				{isReadOnly ? (
+					<TouchableOpacity
+						style={styles.button}
+						onPress={handleAddToMyRoutines}
+						disabled={adding}
+					>
+						<Text style={styles.buttonText}>{adding ? 'Adding...' : 'Add to My Routines'}</Text>
+					</TouchableOpacity>
+				) : (
+					<>
+						<TouchableOpacity
+							style={styles.button}
+							onPress={() =>
+								router.replace({
+									pathname: "/home/routine",
+									params: {
+										id: params.id,
+										routineName: routineName,
+										description: description,
+										exercises: JSON.stringify(exercises),
+										started: "true",
+									},
+								})
+							}
+						>
+							<Text style={styles.buttonText}>Start Workout</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={styles.button}
+							onPress={() =>
+								router.replace({
+									pathname: "/home/routine",
+									params: {
+										id: params.id,
+										routineName: routineName,
+										description: description,
+										exercises: JSON.stringify(exercises),
+										started: "false",
+									},
+								})
+							}
+						>
+							<Text style={styles.buttonText}>Edit Routine</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={styles.button}
+							onPress={() =>
+								router.replace({
+									pathname: "/home/shareRoutine",
+									params: {
+										routineName: routineName,
+										exercises: JSON.stringify(exercises),
+									},
+								})
+							}
+						>
+							<Text style={styles.buttonText}>Share Routine</Text>
+						</TouchableOpacity>
+						<TouchableOpacity style={styles.button} onPress={handleDeleteRoutine}>
+							<Text style={styles.buttonText}>Delete Routine</Text>
+						</TouchableOpacity>
+					</>
+				)}
+			</View>
+		</SafeAreaView>
+	);
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 16,
-  },
+	container: {
+		flex: 1,
+		backgroundColor: "#f5f5f5",
+		padding: 16,
+	},
 
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
+	card: {
+		backgroundColor: "#fff",
+		borderRadius: 12,
+		padding: 20,
+		elevation: 3,
+		shadowColor: "#000",
+		shadowOffset: {
+		width: 0,
+		height: 2,
+		},
+		shadowOpacity: 0.25,
+		shadowRadius: 3.84,
+	},
 
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-  },
+	title: {
+		fontSize: 24,
+		fontWeight: "bold",
+		marginBottom: 10,
+		textAlign: "center",
+	},
 
-  description: {
-    fontSize: 20,
-    fontWeight: "300",
-    marginBottom: 20,
-    textAlign: "center",
-  },
+	description: {
+		fontSize: 20,
+		fontWeight: "300",
+		marginBottom: 20,
+		textAlign: "center",
+	},
 
-  addButton: {
-    backgroundColor: "#4a90e2",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: "center",
-  },
+	button: {
+		backgroundColor: "#4a90e2",
+		padding: 10,
+		borderRadius: 5,
+		marginTop: 10,
+		alignItems: "center",
+	},
 
-  addText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-
-  editButton: {
-    backgroundColor: "#4a90e2",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: "center",
-  },
-
-  editText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-
-  deleteButton: {
-    backgroundColor: "#4a90e2",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: "center",
-  },
-
-  deleteText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
+	buttonText: {
+		color: "#fff",
+		fontSize: 16,
+		fontWeight: "bold",
+	}
 });
 
 export default RoutinePreviewScreen;

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet  } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { ExerciseInfo } from "@/components/Types";
+import { ExerciseInfo } from "@/constants/Types";
 
 const PreviewExercisesScreen = () => {
     const params = useLocalSearchParams<ExerciseInfo>();

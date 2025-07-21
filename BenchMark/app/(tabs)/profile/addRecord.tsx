@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {
+    Alert,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { FirebaseError } from "firebase/app";
-import { getDocs, query, collection, getFirestore, arrayUnion, doc, getDoc, setDoc, updateDoc } from "@react-native-firebase/firestore";
-import auth from "@react-native-firebase/auth";
+import { fetchExercises } from "@/utils/firestoreFetchUtils";
+import { ExerciseInfo } from "@/constants/Types";
+import { saveRecord } from "@/utils/firestoreSaveUtils";
 
 const AddRecordScreen = () => {
     const [catalog, setCatalog] = useState<string[]>([]);
@@ -13,17 +21,10 @@ const AddRecordScreen = () => {
     const [date, setDate] = useState<Date>(new Date());
 
     const fetchExerciseCatalog = async () => {
-        try {
-            const db = getFirestore();
-            const querySnapshot = await getDocs(query(collection(db, "exercises")));
-            const exercises = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                return data.exerciseName
-            });
-            setCatalog(exercises);
-        } catch (e: any) {
-            const err = e as FirebaseError;
-            Alert.alert("Fetch Exercises Failed", err.message);
+        const exercises: ExerciseInfo[] | undefined = await fetchExercises();
+        if (exercises) {
+            const exerciseCatalog: string[] = exercises.map((item: ExerciseInfo) => item.exerciseName);
+            setCatalog(exerciseCatalog);
         }
     };
 
@@ -33,43 +34,14 @@ const AddRecordScreen = () => {
         }
     };
 
-    const saveRecord = async () => {
+    const handleSaveRecord = async () => {
         if (!exercise) {
             Alert.alert("Add 1RM Failed", "No Exercise Selected")
         } else {
-            try {
-                const uid = auth().currentUser?.uid;
-                if (uid) {
-                    const db = getFirestore();
-                    const docRef = doc(db, "users", uid, "repmax", exercise);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        await updateDoc(docRef, {
-                            history: arrayUnion({
-                                date: date,
-                                weight: weight
-                            })
-                        });
-                    } else {
-                        await setDoc(docRef, {
-                            exercise: exercise,
-                            history: [{
-                                date: date,
-                                weight: weight
-                            }]
-                        });
-                    }
-                    Alert.alert("Success", `1RM added for ${exercise}`)
-                    setExercise('');
-                    setWeight(0);
-                    setDate(new Date());
-                } else {
-                    Alert.alert("Add 1RM Failed", "No User Logged In");
-                }
-            } catch (e: any) {
-                const err = e as FirebaseError;
-                Alert.alert("Add 1RM Failed", err.message);
-            }
+            await saveRecord(exercise, date, weight);
+            setExercise('');
+            setWeight(0);
+            setDate(new Date());
         }
     };
 
@@ -117,7 +89,7 @@ const AddRecordScreen = () => {
                         />
                     </View>
                 </View>
-                <TouchableOpacity style={styles.buttonContainer} onPress={saveRecord}>
+                <TouchableOpacity style={styles.buttonContainer} onPress={handleSaveRecord}>
                     <Text style={styles.buttonText}>Add 1RM</Text>
                 </TouchableOpacity>
             </View>
@@ -128,7 +100,6 @@ const AddRecordScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        margin: 10,
         backgroundColor: "#FFF"
     },
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { FriendRequest } from "./Types";
+import { FriendRequest } from "@/constants/Types";
 
 interface FriendRequestItemProps {
   request: FriendRequest;
