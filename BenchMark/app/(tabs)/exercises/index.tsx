@@ -6,9 +6,9 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { ExerciseInfo } from "@/constants/Types";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fetchExercises } from "@/utils/firestoreFetchUtils";
 
 const ExercisesScreen = () => {
@@ -44,9 +44,11 @@ const ExercisesScreen = () => {
         )
     };
 
-    useEffect(() => {
-        loadExercises();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            loadExercises();
+        }, [])
+    );
 
     useEffect(() => {
         setTarget(filterParams.selectedTargets ? JSON.parse(filterParams.selectedTargets as string) : []);

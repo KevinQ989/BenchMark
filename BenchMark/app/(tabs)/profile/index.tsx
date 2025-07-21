@@ -11,7 +11,7 @@ import {
     View
 } from "react-native";
 import auth from "@react-native-firebase/auth";
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Metric, RepMax, UserData } from "@/constants/Types";
 import { useFocusEffect, useRouter } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
