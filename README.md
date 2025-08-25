@@ -49,13 +49,6 @@ To use the AI workout recommendations feature, you'll need to set up a Google Ge
    npx expo run:ios
    ```
 
-Alternatively,
-
-1. Download the .tar file from https://drive.google.com/file/d/1aau7GckEsyxOPJF4gh1n8e6CFO9uiB61/view?usp=sharing
-2. Drag the downloaded .tar file to desktop and double-click it
-3. Open XCode's simulator
-4. Drag the BenchMark app into the simulator
-
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
