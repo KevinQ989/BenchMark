@@ -38,3 +38,8 @@ yarn-error.*
 
 app-example
 .env
+
+# Google Services Configuration (contains sensitive API keys)
+google-services.json
+ios/BenchMark/GoogleService-Info.plist
+ios/BenchMark/GoogleService-Info.plist
